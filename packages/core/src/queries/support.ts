@@ -1,6 +1,6 @@
 import type { Db } from '../supabase'
 import type { Enums, Tables } from '../database.types'
-import type { Operator } from '../support'
+import { networkName, type Operator } from '../support'
 
 /**
  * Supporting the community.
@@ -207,10 +207,18 @@ const toSettlement = (row: Tables<'sup_settlements'>): Settlement => ({
   netMinor: row.net_minor,
   accountName: row.account_name,
   accountKind: row.account_kind,
+  // The network's proper name, not the enum value: the statement says
+  // "Airtel Money" and a screen beside it saying "airtel" reads as a different
+  // system describing the same payout.
   destination:
     row.account_kind === 'bank'
       ? [row.bank_name, row.account_number].filter(Boolean).join(' · ')
-      : [row.mobile_operator, row.mobile_number].filter(Boolean).join(' · '),
+      : [
+          row.mobile_operator ? networkName(row.mobile_operator as Operator) : null,
+          row.mobile_number,
+        ]
+          .filter(Boolean)
+          .join(' · '),
   transferReference: row.transfer_reference,
   notes: row.notes,
   settledAt: new Date(row.settled_at),
@@ -345,4 +353,64 @@ export async function reconcileCollections(
     expired: data?.expired ?? 0,
     reasons: data?.reasons ?? [],
   }
+}
+
+// ---------------------------------------------------------------------------
+// A settlement's statement
+// ---------------------------------------------------------------------------
+
+/** The payments a settlement covered, in the order they cleared. */
+export async function fetchSettlementPayments(
+  db: Db,
+  settlementId: string,
+): Promise<SupportTransaction[]> {
+  const { data, error } = await db
+    .from('sup_transactions')
+    .select('*')
+    .eq('settlement_id', settlementId)
+    .order('completed_at', { ascending: true })
+  if (error) throw error
+  return data.map(toTransaction)
+}
+
+/**
+ * The settlement's PDF statement.
+ *
+ * Rendered by the `settlement-report` Edge Function, which both applications
+ * call — so the operator who recorded the payout and the creator who received
+ * it hold the same file, down to the byte. The alternative, a renderer in each
+ * app, is two programs that agree until one of them is changed.
+ */
+export async function fetchSettlementReport(db: Db, settlementId: string): Promise<Blob> {
+  const { data, error } = await db.functions.invoke<Blob>('settlement-report', {
+    body: { settlementId },
+  })
+  if (error) throw new Error('That statement could not be produced.')
+  if (!data) throw new Error('That statement came back empty.')
+  return data
+}
+
+/**
+ * Hands the statement to the browser as a file.
+ *
+ * The one DOM-touching helper here, alongside `storage.ts`'s use of
+ * `OffscreenCanvas`: core is free of *frameworks*, not of the platform.
+ *
+ * The object URL is revoked on the next frame rather than immediately: Safari
+ * has not started the download when `click()` returns, and revoking in the same
+ * tick cancels it.
+ */
+export async function downloadSettlementReport(
+  db: Db,
+  settlement: Pick<Settlement, 'id' | 'reference'>,
+): Promise<void> {
+  const blob = await fetchSettlementReport(db, settlement.id)
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `settlement-${settlement.reference}.pdf`
+  document.body.append(link)
+  link.click()
+  link.remove()
+  requestAnimationFrame(() => URL.revokeObjectURL(url))
 }

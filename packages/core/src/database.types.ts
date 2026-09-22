@@ -699,6 +699,35 @@ export type Database = {
           },
         ]
       }
+      edt_editors: {
+        Row: {
+          created_at: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          last_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "edt_editors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "sec_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mod_reports: {
         Row: {
           created_at: string
@@ -726,6 +755,65 @@ export type Database = {
           status?: Database["public"]["Enums"]["mod_report_status"]
           target_id?: string
           target_kind?: Database["public"]["Enums"]["mod_target_kind"]
+        }
+        Relationships: []
+      }
+      opr_operators: {
+        Row: {
+          created_at: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          last_name?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opr_operators_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "sec_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sec_users: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          mobile: string | null
+          status: Database["public"]["Enums"]["sec_user_status"]
+          updated_at: string
+          user_type: Database["public"]["Enums"]["sec_user_type"]
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          mobile?: string | null
+          status?: Database["public"]["Enums"]["sec_user_status"]
+          updated_at?: string
+          user_type: Database["public"]["Enums"]["sec_user_type"]
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          mobile?: string | null
+          status?: Database["public"]["Enums"]["sec_user_status"]
+          updated_at?: string
+          user_type?: Database["public"]["Enums"]["sec_user_type"]
         }
         Relationships: []
       }
@@ -1061,7 +1149,15 @@ export type Database = {
           id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "usr_profiles_user"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "sec_users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       usr_read_progress: {
         Row: {
@@ -1460,6 +1556,28 @@ export type Database = {
       cnt_text_to_doc: { Args: { body: string }; Returns: Json }
       cnt_unpublish_part: { Args: { p_part_id: string }; Returns: undefined }
       cnt_word_count: { Args: { doc: Json }; Returns: number }
+      edt_save_name: {
+        Args: { p_first_name: string; p_last_name: string }
+        Returns: undefined
+      }
+      sec_is_editorial: { Args: never; Returns: boolean }
+      sec_is_operator: { Args: never; Returns: boolean }
+      sec_is_reader: { Args: never; Returns: boolean }
+      sec_provision_account: {
+        Args: {
+          p_email: string
+          p_first_name: string
+          p_last_name: string
+          p_mobile?: string
+          p_role: Database["public"]["Enums"]["usr_role"]
+          p_type: Database["public"]["Enums"]["sec_user_type"]
+        }
+        Returns: string
+      }
+      sec_user_type: {
+        Args: never
+        Returns: Database["public"]["Enums"]["sec_user_type"]
+      }
       sup_collection_status: {
         Args: { p_reference: string }
         Returns: {
@@ -1517,6 +1635,8 @@ export type Database = {
       com_status: "visible" | "hidden"
       mod_report_status: "open" | "actioned" | "dismissed"
       mod_target_kind: "comment" | "question" | "answer" | "story"
+      sec_user_status: "active" | "suspended"
+      sec_user_type: "reader" | "editorial" | "operator"
       sup_account_kind: "bank" | "mobile_money"
       sup_settlement_status: "not_applicable" | "pending" | "settled"
       sup_status: "pending" | "successful" | "failed" | "reversed" | "refunded"
@@ -1662,6 +1782,8 @@ export const Constants = {
       com_status: ["visible", "hidden"],
       mod_report_status: ["open", "actioned", "dismissed"],
       mod_target_kind: ["comment", "question", "answer", "story"],
+      sec_user_status: ["active", "suspended"],
+      sec_user_type: ["reader", "editorial", "operator"],
       sup_account_kind: ["bank", "mobile_money"],
       sup_settlement_status: ["not_applicable", "pending", "settled"],
       sup_status: ["pending", "successful", "failed", "reversed", "refunded"],

@@ -18,9 +18,12 @@ const TITLES: Record<string, [string, string]> = {
 
 export function Shell() {
   const { pathname } = useLocation()
-  const { session, signOut } = useAuth()
+  const { session, account, signOut } = useAuth()
   const [title, subtitle] = TITLES[pathname] ?? ['Operator console', '']
   const email = session?.user.email ?? ''
+  // The name comes from opr_operators; the email is the fallback for an
+  // account provisioned before anyone recorded one.
+  const who = account?.name ?? email
 
   return (
     <div className="flex h-dvh overflow-hidden bg-[#fbf7f0]">
@@ -42,11 +45,14 @@ export function Shell() {
 
         <div className="mt-auto flex items-center gap-[10px] px-[22px] pt-5">
           <div className="flex size-[30px] items-center justify-center rounded-full bg-accent text-sm text-[#fff6ea]">
-            {email.charAt(0).toUpperCase() || '·'}
+            {who.charAt(0).toUpperCase() || '·'}
           </div>
-          <button type="button" onClick={signOut} className="text-[14px] text-[#d9c7b6]">
-            Sign out
-          </button>
+          <div className="min-w-0">
+            <div className="truncate text-[13px] text-surface-warm">{who}</div>
+            <button type="button" onClick={signOut} className="text-[12px] text-[#9c8878]">
+              Sign out
+            </button>
+          </div>
         </div>
       </aside>
 

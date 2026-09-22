@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { sendEmailCode, verifyEmailCode } from '@amakefe/core'
+import { fetchAccount, sendEmailCode, signOutReader, verifyEmailCode } from '@amakefe/core'
 import { db } from '../db'
 
 /**
@@ -88,6 +88,21 @@ export function SignInSheet({
     setError(null)
     try {
       await verifyEmailCode(db, email, code)
+
+      // The code was right, but the account may belong to the studio or the
+      // console — an editor has an email address like anyone else, and nothing
+      // stops them asking this app for a code. Such an account has no reader
+      // profile, so the save or reaction that opened this sheet would fail on a
+      // foreign key with nothing on screen to explain it. Refused here instead,
+      // while someone is looking, and the session is given straight back.
+      const account = await fetchAccount(db)
+      if (account && account.userType !== 'reader') {
+        await signOutReader(db)
+        setError('That account is for another part of the platform. Use a different address.')
+        setBusy(false)
+        return
+      }
+
       // The session exists now, so the thing they were doing can go through.
       onSignedIn()
       onClose()

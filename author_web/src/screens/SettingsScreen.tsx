@@ -1,12 +1,16 @@
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { facebookAuthUrl, formatDate, type FacebookConnection } from '@amakefe/core'
+import { useAuth } from '../auth'
 import { Async, Panel } from '../components/shell'
 import { useConfirm } from '../components/ConfirmDialog'
 import {
   useConnectFacebookPage,
   useDisconnectFacebook,
+  useEditorName,
   useFacebookConnection,
   usePendingPages,
+  useSaveEditorName,
 } from '../hooks/queries'
 import { db } from '../db'
 
@@ -34,6 +38,8 @@ export function SettingsScreen() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-5">
+      <YourAccount />
+
       {outcome === 'error' && message && (
         <Panel>
           <p className="text-[13px] text-accent-deep">{message}</p>
@@ -225,6 +231,102 @@ function PagePicker({ pendingId, onDone }: { pendingId: string; onDone: () => vo
       {connect.error instanceof Error && (
         <p className="mt-3 text-xs text-accent-deep">{connect.error.message}</p>
       )}
+    </Panel>
+  )
+}
+
+/**
+ * The editor's own name, which is the only thing `edt_editors` holds.
+ *
+ * It is here rather than behind an administrator because a name is chrome:
+ * stories carry no byline, so it reaches nothing a reader ever sees — it names
+ * the person to themselves and to whoever else opens the studio. The type and
+ * the role, which decide what this account can actually do, are not editable
+ * from any app at all.
+ *
+ * Accounts made from now on arrive with a name from `sec_provision_account`.
+ * This exists because the studio's first account predates that, and the old
+ * schema had nowhere to record one.
+ */
+function YourAccount() {
+  const { session } = useAuth()
+  const editor = useEditorName()
+  const save = useSaveEditorName()
+
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+
+  // Seeded once the query lands, and not on every render — a controlled field
+  // reset from server state mid-edit throws away what is being typed.
+  useEffect(() => {
+    if (!editor.data) return
+    setFirstName(editor.data.firstName)
+    setLastName(editor.data.lastName)
+  }, [editor.data])
+
+  const changed =
+    firstName.trim() !== (editor.data?.firstName ?? '') ||
+    lastName.trim() !== (editor.data?.lastName ?? '')
+  const complete = firstName.trim().length > 0 && lastName.trim().length > 0
+
+  const field =
+    'w-full rounded-tile border border-line-strong bg-surface-raised px-3 py-2 text-sm text-ink outline-none focus:border-accent'
+
+  return (
+    <Panel title="Your account">
+      <Async query={editor}>
+        {(saved) => (
+          <>
+            {!saved && (
+              <p className="mb-4 text-sm text-body">
+                This account has no name recorded. It is shown in the studio and nowhere else.
+              </p>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <label>
+                <span className="text-xs text-muted">First name</span>
+                <input
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  className={`${field} mt-1`}
+                />
+              </label>
+              <label>
+                <span className="text-xs text-muted">Last name</span>
+                <input
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  className={`${field} mt-1`}
+                />
+              </label>
+            </div>
+
+            <p className="mt-3 text-xs text-muted">
+              Signed in as {session?.user.email}. Changing the address, or what this account may
+              do, is an administrator&rsquo;s job.
+            </p>
+
+            {save.isError && (
+              <p className="mt-3 text-xs text-accent-deep">
+                {save.error instanceof Error ? save.error.message : 'That did not save.'}
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => save.mutate({ firstName, lastName })}
+                disabled={!complete || !changed || save.isPending}
+                className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface-warm disabled:opacity-40"
+              >
+                {save.isPending ? 'Saving…' : 'Save'}
+              </button>
+              {!changed && saved && <span className="text-xs text-muted">Saved</span>}
+            </div>
+          </>
+        )}
+      </Async>
     </Panel>
   )
 }

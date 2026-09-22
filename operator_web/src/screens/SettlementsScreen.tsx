@@ -1,7 +1,15 @@
 import { useState } from 'react'
-import { formatCount, formatDate, formatKwacha } from '@amakefe/core'
+import { formatCount, formatDate, formatKwacha, type Settlement } from '@amakefe/core'
+import { SettlementStatement } from '@amakefe/ui'
 import { Async, Panel, Stat } from '../components/shell'
-import { useAccount, useSettle, useSettlements, useTotals } from '../hooks/queries'
+import {
+  useAccount,
+  useDownloadStatement,
+  useSettle,
+  useSettlementPayments,
+  useSettlements,
+  useTotals,
+} from '../hooks/queries'
 
 /**
  * Paying the creator what she is owed.
@@ -19,6 +27,7 @@ export function SettlementsScreen() {
   const settlements = useSettlements()
   const account = useAccount()
   const [open, setOpen] = useState(false)
+  const [viewing, setViewing] = useState<Settlement | null>(null)
 
   const canSettle = (totals.data?.awaitingCount ?? 0) > 0 && Boolean(account.data)
 
@@ -67,43 +76,17 @@ export function SettlementsScreen() {
             rows.length === 0 ? (
               <p className="text-sm text-body">Nothing has been settled yet.</p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-xs text-muted">
-                    <th className="pb-2 font-normal">Settled</th>
-                    <th className="pb-2 font-normal">Reference</th>
-                    <th className="pb-2 font-normal">Transfer</th>
-                    <th className="pb-2 font-normal">Period</th>
-                    <th className="pb-2 font-normal">To</th>
-                    <th className="pb-2 text-right font-normal">Gross</th>
-                    <th className="pb-2 text-right font-normal">Paid</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.id} className="border-b border-line-soft last:border-0">
-                      <td className="py-3 whitespace-nowrap">{formatDate(row.settledAt)}</td>
-                      <td className="text-muted">{row.reference}</td>
-                      <td className="text-muted">{row.transferReference ?? '—'}</td>
-                      <td className="whitespace-nowrap">
-                        {formatDate(row.periodFrom)} – {formatDate(row.periodTo)}
-                      </td>
-                      <td>
-                        {row.accountName}
-                        <span className="block text-xs text-muted">{row.destination}</span>
-                      </td>
-                      <td className="text-right tabular-nums text-muted">
-                        {formatKwacha(row.grossMinor)}
-                      </td>
-                      <td className="text-right tabular-nums">{formatKwacha(row.netMinor)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="flex flex-col gap-2">
+                {rows.map((row) => (
+                  <SettlementRow key={row.id} settlement={row} onOpen={() => setViewing(row)} />
+                ))}
+              </div>
             )
           }
         </Async>
       </Panel>
+
+      {viewing && <Statement settlement={viewing} onClose={() => setViewing(null)} />}
 
       {open && account.data && totals.data && (
         <SettleDialog
@@ -210,5 +193,62 @@ function SettleDialog({
         </div>
       </div>
     </div>
+  )
+}
+
+/** One payout in the history. Clicking it opens the statement. */
+function SettlementRow({ settlement, onOpen }: { settlement: Settlement; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex w-full items-center gap-4 rounded-card border border-line-card p-4 text-left transition-colors hover:border-line-strong"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm text-ink">
+          {formatKwacha(settlement.netMinor)} to {settlement.accountName}
+        </span>
+        <span className="block text-xs text-muted">
+          {formatDate(settlement.settledAt)} · {formatCount(settlement.paymentCount)} payment
+          {settlement.paymentCount === 1 ? '' : 's'} · {settlement.destination}
+        </span>
+      </span>
+      <span className="shrink-0 text-xs text-muted">
+        {settlement.transferReference ?? settlement.reference}
+      </span>
+      <span className="shrink-0 text-xs text-muted" aria-hidden>
+        ›
+      </span>
+    </button>
+  )
+}
+
+/**
+ * The statement itself, which is `@amakefe/ui`'s and not this app's.
+ *
+ * The creator opens the identical component from her Supporters screen. Only
+ * the word for the last column differs, and only because "settled" is what the
+ * operators did and "yours" is what she received.
+ */
+function Statement({ settlement, onClose }: { settlement: Settlement; onClose: () => void }) {
+  const payments = useSettlementPayments(settlement.id)
+  const download = useDownloadStatement()
+
+  return (
+    <SettlementStatement
+      settlement={settlement}
+      payments={payments.data ?? null}
+      onClose={onClose}
+      action={
+        <button
+          type="button"
+          onClick={() => download.mutate(settlement)}
+          disabled={download.isPending}
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs text-ink disabled:opacity-40"
+        >
+          {download.isPending ? 'Preparing…' : download.isError ? 'Try again' : 'Download PDF'}
+        </button>
+      }
+    />
   )
 }

@@ -1,5 +1,5 @@
 import { createContext, use, useCallback, useEffect, useState, type ReactNode } from 'react'
-import { signOutReader, type Session } from '@amakefe/core'
+import { fetchAccount, signOutReader, type Session } from '@amakefe/core'
 import { db } from './db'
 
 /**
@@ -14,6 +14,13 @@ import { db } from './db'
  * reader stays in the story they were reading, and the action that prompted the
  * sign-in finishes the moment the code checks out, so there is no gesture to
  * remember across a redirect and nothing to replay afterwards.
+ *
+ * **A session here must belong to a reader.** Nothing stops an editor asking
+ * this app for a code — they have an email address like anyone — but a studio
+ * or console account has no `usr_profiles` row, so the first save or reaction
+ * would fail on a foreign key with nothing to show for it. It is refused at the
+ * door instead, quietly: the session is dropped and reading carries on, because
+ * reading never needed an account in the first place.
  */
 
 type AuthState = {
@@ -36,6 +43,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = db.auth.onAuthStateChange((_event, next) => setSession(next))
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  // The backstop, for a session that already existed — someone who signed in
+  // here before their account was made a studio one, say. It drops the session
+  // and says nothing, because there is nobody to say it to: reading carries on
+  // exactly as it did. The sheet handles the case where someone is watching.
+  useEffect(() => {
+    if (!session) return
+    let cancelled = false
+    fetchAccount(db).then((account) => {
+      if (cancelled || !account || account.userType === 'reader') return
+      void signOutReader(db)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [session])
 
   const signOut = useCallback(async () => {
     await signOutReader(db)

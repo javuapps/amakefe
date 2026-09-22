@@ -1,5 +1,5 @@
 import { createContext, use, useEffect, useState, type ReactNode } from 'react'
-import type { Session } from '@amakefe/core'
+import { fetchAccount, type Account, type Session } from '@amakefe/core'
 import { db } from './db'
 import { clearAllDrafts } from './draftStore'
 import { Mark } from './components/Mark'
@@ -14,14 +14,21 @@ import { Mark } from './components/Mark'
  *
  * Accounts are created by an administrator; there is no sign-up here.
  *
- * Being signed in is not enough. Every screen also requires an editorial role,
- * checked in the database by usr_is_editorial(). The gate below is a courtesy to
- * the person looking at the screen; the real enforcement is in RLS and in the
- * SECURITY DEFINER functions, which is why a stolen token still reads nothing.
+ * Being signed in is not enough, and neither is a role. The account must be
+ * `user_type = 'editorial'` — ginni's `Expect`, applied where Supabase allows
+ * it. Supabase Auth mints a session on any valid credential, so the surface
+ * check lands immediately after sign-in rather than during it, and an operator
+ * who typed their password here is signed back out with a message that does
+ * not name the console.
+ *
+ * The gate below is a courtesy to the person looking at the screen; the real
+ * enforcement is in RLS and in the SECURITY DEFINER functions, which now ask
+ * the type before the role — which is why a stolen token still reads nothing.
  */
 
 type AuthState = {
   session: Session | null
+  account: Account | null
   isEditorial: boolean
   loading: boolean
   signOut: () => Promise<void>
@@ -31,6 +38,7 @@ const AuthContext = createContext<AuthState | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
+  const [account, setAccount] = useState<Account | null>(null)
   const [isEditorial, setIsEditorial] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -43,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = db.auth.onAuthStateChange((_event, next) => {
       setSession(next)
       if (!next) {
+        setAccount(null)
         setIsEditorial(false)
         setLoading(false)
       }
@@ -53,11 +62,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session) return
     let cancelled = false
-    db.rpc('usr_is_editorial').then(({ data }) => {
-      if (cancelled) return
-      setIsEditorial(data === true)
-      setLoading(false)
-    })
+    // Both questions, in one round trip's worth of latency: which application
+    // the account belongs to, and what it may do inside it. `usr_is_editorial`
+    // now answers both, but the account is wanted anyway — for the name.
+    Promise.all([fetchAccount(db), db.rpc('usr_is_editorial')])
+      .then(([next, role]) => {
+        if (cancelled) return
+        setAccount(next)
+        setIsEditorial(next?.userType === 'editorial' && role.data === true)
+        setLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setAccount(null)
+        setIsEditorial(false)
+        setLoading(false)
+      })
     return () => {
       cancelled = true
     }
@@ -70,7 +90,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await db.auth.signOut()
   }
 
-  return <AuthContext value={{ session, isEditorial, loading, signOut }}>{children}</AuthContext>
+  return (
+    <AuthContext value={{ session, account, isEditorial, loading, signOut }}>{children}</AuthContext>
+  )
 }
 
 export function useAuth(): AuthState {
@@ -157,8 +179,8 @@ export function NoAccess({ onSignOut }: { onSignOut: () => void }) {
       <div className="max-w-sm">
         <h1 className="font-display text-[26px] text-surface-warm">No studio access</h1>
         <p className="mt-3 text-sm leading-relaxed text-[#c9b6a4]">
-          This account is signed in but has no editorial role. An administrator needs to grant one
-          before the studio will show anything.
+          This account cannot open the studio. An administrator provisions studio accounts, and an
+          account made for another part of the platform is not one of them.
         </p>
         <button type="button" onClick={onSignOut} className="mt-6 text-xs text-gold">
           Sign out

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
+  downloadSettlementReport,
   fetchSettlementAccount,
+  fetchSettlementPayments,
   fetchSettlements,
   fetchSupportTotals,
   fetchSupportTransactions,
@@ -21,6 +23,7 @@ export const keys = {
   totals: ['totals'] as const,
   settlements: ['settlements'] as const,
   account: ['account'] as const,
+  settlementPayments: (id: string) => ['settlementPayments', id] as const,
 }
 
 export const useTransactions = (status: Enums<'sup_status'> | 'all') =>
@@ -40,6 +43,24 @@ export const useSettlements = () =>
 
 export const useAccount = () =>
   useQuery({ queryKey: keys.account, queryFn: () => fetchSettlementAccount(db) })
+
+/** What a settlement covered. Only fetched once its row is opened. */
+export const useSettlementPayments = (settlementId: string | null) =>
+  useQuery({
+    queryKey: keys.settlementPayments(settlementId ?? ''),
+    enabled: settlementId !== null,
+    queryFn: () => fetchSettlementPayments(db, settlementId!),
+  })
+
+/**
+ * The PDF. A mutation rather than a query: it is a file leaving the app, not
+ * state, and there is nothing to cache when the renderer is deterministic.
+ */
+export const useDownloadStatement = () =>
+  useMutation({
+    mutationFn: (settlement: { id: string; reference: string }) =>
+      downloadSettlementReport(db, settlement),
+  })
 
 /**
  * Everything a payout touches is invalidated together: the ledger rows change

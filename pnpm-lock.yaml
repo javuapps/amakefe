@@ -78,6 +78,9 @@ importers:
       '@amakefe/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@amakefe/ui':
+        specifier: workspace:*
+        version: link:../packages/ui
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.103.1(react@19.3.0)

@@ -1,7 +1,18 @@
-import { formatCount, formatDate, formatKwacha, networkName, type Operator } from '@amakefe/core'
+import { useState } from 'react'
+import {
+  formatCount,
+  formatDate,
+  formatKwacha,
+  networkName,
+  type Operator,
+  type Settlement,
+} from '@amakefe/core'
+import { SettlementStatement } from '@amakefe/ui'
 import { Async, Panel } from '../components/shell'
 import {
+  useDownloadStatement,
   useSettlementAccount,
+  useSettlementPayments,
   useSettlements,
   useSupportTotals,
   useSupportTransactions,
@@ -21,6 +32,7 @@ export function SupportersScreen() {
   const transactions = useSupportTransactions()
   const settlements = useSettlements()
   const account = useSettlementAccount()
+  const [viewing, setViewing] = useState<Settlement | null>(null)
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,9 +72,7 @@ export function SupportersScreen() {
                   {data.kind === 'bank'
                     ? [data.bankName, data.branch, data.accountNumber].filter(Boolean).join(' · ')
                     : [
-                        data.mobileOperator
-                          ? networkName(data.mobileOperator as Operator)
-                          : null,
+                        data.mobileOperator ? networkName(data.mobileOperator as Operator) : null,
                         data.mobileNumber,
                       ]
                         .filter(Boolean)
@@ -92,31 +102,11 @@ export function SupportersScreen() {
                 moment it clears.
               </p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-xs text-muted">
-                    <th className="pb-2 font-normal">Paid</th>
-                    <th className="pb-2 font-normal">Reference</th>
-                    <th className="pb-2 font-normal">Covering</th>
-                    <th className="pb-2 font-normal">To</th>
-                    <th className="pb-2 text-right font-normal">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row) => (
-                    <tr key={row.id} className="border-b border-line-soft last:border-0">
-                      <td className="py-3">{formatDate(row.settledAt)}</td>
-                      <td className="text-muted">{row.transferReference ?? row.reference}</td>
-                      <td>
-                        {formatCount(row.paymentCount)} payment
-                        {row.paymentCount === 1 ? '' : 's'} to {formatDate(row.periodTo)}
-                      </td>
-                      <td>{row.destination}</td>
-                      <td className="text-right tabular-nums">{formatKwacha(row.netMinor)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="flex flex-col gap-2">
+                {rows.map((row) => (
+                  <PayoutRow key={row.id} settlement={row} onOpen={() => setViewing(row)} />
+                ))}
+              </div>
             )
           }
         </Async>
@@ -170,6 +160,8 @@ export function SupportersScreen() {
           }
         </Async>
       </Panel>
+
+      {viewing && <Statement settlement={viewing} onClose={() => setViewing(null)} />}
     </div>
   )
 }
@@ -181,5 +173,61 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
       <div className="mt-2 font-display text-[22px] text-ink">{value}</div>
       {note && <div className="mt-1 text-xs text-muted">{note}</div>}
     </div>
+  )
+}
+
+/** One payout she received. Clicking it opens the statement. */
+function PayoutRow({ settlement, onOpen }: { settlement: Settlement; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex w-full items-center gap-4 rounded-card border border-line-card p-4 text-left transition-colors hover:border-line-strong"
+    >
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm text-ink">{formatKwacha(settlement.netMinor)}</span>
+        <span className="block text-xs text-muted">
+          {formatDate(settlement.settledAt)} · {formatCount(settlement.paymentCount)} payment
+          {settlement.paymentCount === 1 ? '' : 's'} · into {settlement.destination}
+        </span>
+      </span>
+      <span className="shrink-0 text-xs text-muted">
+        {settlement.transferReference ?? settlement.reference}
+      </span>
+      <span className="shrink-0 text-xs text-muted" aria-hidden>
+        ›
+      </span>
+    </button>
+  )
+}
+
+/**
+ * The statement, which is the operators' statement.
+ *
+ * The same component and the same PDF they hold — there is no version of this
+ * document that only one side has. "Yours" rather than "Settled" on the last
+ * column, because that is what the number is to her.
+ */
+function Statement({ settlement, onClose }: { settlement: Settlement; onClose: () => void }) {
+  const payments = useSettlementPayments(settlement.id)
+  const download = useDownloadStatement()
+
+  return (
+    <SettlementStatement
+      settlement={settlement}
+      payments={payments.data ?? null}
+      netLabel="Yours"
+      onClose={onClose}
+      action={
+        <button
+          type="button"
+          onClick={() => download.mutate(settlement)}
+          disabled={download.isPending}
+          className="rounded-full border border-line-strong px-3 py-1.5 text-xs text-ink disabled:opacity-40"
+        >
+          {download.isPending ? 'Preparing…' : download.isError ? 'Try again' : 'Download PDF'}
+        </button>
+      }
+    />
   )
 }

@@ -1,3 +1,11 @@
 @import 'tailwindcss';
 @import '@amakefe/core/fonts.css';
 @import '@amakefe/core/tokens.css';
+
+/* Tailwind auto-detects sources under this app only, and skips node_modules —
+   where the workspace link to @amakefe/ui lives. Without this, a class used
+   *only* in a shared component is silently absent from the build and nothing
+   fails: the settlement statement would come up unstyled and it would look
+   like a rendering quirk rather than missing CSS. The other two apps carry the
+   same line for the same reason. */
+@source '../../packages/ui/src';

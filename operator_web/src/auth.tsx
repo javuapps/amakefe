@@ -1,5 +1,5 @@
 import { createContext, use, useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import type { Session } from '@amakefe/core'
+import { fetchAccount, type Account, type Session } from '@amakefe/core'
 import { db } from './db'
 
 /**
@@ -11,13 +11,22 @@ import { db } from './db'
  * a session or a domain — the studio cannot reach these screens even signed in
  * as her, and nothing here is reachable without `usr_is_operator()`.
  *
+ * The account must be `user_type = 'operator'` — ginni's `Expect`, applied
+ * where Supabase allows it. Supabase Auth mints the session on a valid
+ * credential whatever application it belongs to, so the check lands
+ * immediately after sign-in rather than during it, and the person is signed
+ * back out. The message names no other application: a wrong-surface credential
+ * should not tell its holder where the account *does* work.
+ *
  * The gate below is a courtesy to whoever is looking at the screen. The real
- * enforcement is RLS and the SECURITY DEFINER functions: `sup_settle` refuses
- * anyone but an operator whatever this component believes.
+ * enforcement is RLS and the SECURITY DEFINER functions: `sup_settle` and
+ * every `sup_` policy ask `usr_is_operator()`, which asks the type first — so
+ * an editor holding a valid token reads nothing here.
  */
 
 type AuthState = {
   session: Session | null
+  account: Account | null
   isOperator: boolean
   loading: boolean
   signOut: () => Promise<void>
@@ -27,7 +36,7 @@ const AuthContext = createContext<AuthState | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
-  const [isOperator, setIsOperator] = useState(false)
+  const [account, setAccount] = useState<Account | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: listener } = db.auth.onAuthStateChange((_event, next) => {
       setSession(next)
       if (!next) {
-        setIsOperator(false)
+        setAccount(null)
         setLoading(false)
       }
     })
@@ -49,11 +58,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!session) return
     let cancelled = false
-    db.rpc('usr_is_operator').then(({ data }) => {
-      if (cancelled) return
-      setIsOperator(data === true)
-      setLoading(false)
-    })
+    fetchAccount(db)
+      .then((next) => {
+        if (cancelled) return
+        setAccount(next)
+        setLoading(false)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setAccount(null)
+        setLoading(false)
+      })
     return () => {
       cancelled = true
     }
@@ -61,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = () => db.auth.signOut().then(() => undefined)
 
-  return <AuthContext value={{ session, isOperator, loading, signOut }}>{children}</AuthContext>
+  return (
+    <AuthContext value={{ session, account, isOperator: account?.userType === 'operator', loading, signOut }}>
+      {children}
+    </AuthContext>
+  )
 }
 
 export function useAuth(): AuthState {
@@ -137,15 +156,21 @@ export function SignIn() {
   )
 }
 
-/** Signed in, but not an operator — an editor who opened the wrong bookmark. */
+/**
+ * Signed in with a credential that does not belong here.
+ *
+ * It says nothing about what the account *is*. An editor who typed their
+ * password into the console should learn that it does not work here, and
+ * nothing more — naming the studio would turn a wrong guess into a map.
+ */
 export function NoAccess({ onSignOut }: { onSignOut: () => void }) {
   return (
     <div className="flex min-h-dvh items-center justify-center bg-ink px-6 text-center">
       <div className="max-w-sm">
         <h1 className="font-display text-[26px] text-surface-warm">No operator access</h1>
         <p className="mt-3 text-sm leading-relaxed text-[#c9b6a4]">
-          This account is signed in but has no finance role. Handling payouts is deliberately
-          separate from writing and publishing.
+          This account cannot open the operator console. Handling payouts is deliberately separate
+          from writing and publishing, so it needs an account of its own.
         </p>
         <button type="button" onClick={onSignOut} className="mt-6 text-xs text-gold">
           Sign out

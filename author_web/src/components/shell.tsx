@@ -48,9 +48,11 @@ export function Shell() {
 
 function ShellFrame() {
   const { pathname } = useLocation()
-  const { session, signOut } = useAuth()
+  const { session, account, signOut } = useAuth()
   const [title, subtitle] = titleFor(pathname)
   const email = session?.user.email ?? ''
+  // From edt_editors, where one has been recorded; the address until then.
+  const who = account?.name ?? email
 
   return (
     // The shell is exactly one viewport tall and does not scroll. Only the
@@ -76,11 +78,14 @@ function ShellFrame() {
           <InboxSummary />
           <div className="flex items-center gap-[10px] pt-[6px]">
             <div className="flex size-[30px] items-center justify-center rounded-full bg-accent text-sm text-[#fff6ea]">
-              {email.charAt(0).toUpperCase() || '·'}
+              {who.charAt(0).toUpperCase() || '·'}
             </div>
-            <button type="button" onClick={signOut} className="text-[14px] text-[#d9c7b6]">
-              Sign out
-            </button>
+            <div className="min-w-0">
+              <div className="truncate text-[13px] text-[#d9c7b6]">{who}</div>
+              <button type="button" onClick={signOut} className="text-[12px] text-[#9c8878]">
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       </aside>

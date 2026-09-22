@@ -28,10 +28,14 @@ import {
   fetchStudioStories,
   fetchStudioTotals,
   fetchStudioStory,
+  downloadSettlementReport,
+  fetchEditorName,
+  fetchSettlementPayments,
   fetchSettlementAccount,
   fetchSettlements,
   fetchSupportTotals,
   fetchSupportTransactions,
+  saveEditorName,
   hideComment,
   keepComment,
   postPublicationNow,
@@ -74,6 +78,8 @@ export const keys = {
   supportTotals: ['supportTotals'] as const,
   settlements: ['settlements'] as const,
   settlementAccount: ['settlementAccount'] as const,
+  settlementPayments: (id: string) => ['settlementPayments', id] as const,
+  editorName: ['editorName'] as const,
 }
 
 export const useDashboardStats = () =>
@@ -215,6 +221,17 @@ export const useModerationQueue = () =>
 export const useSupportTransactions = () =>
   useQuery({ queryKey: keys.support, queryFn: () => fetchSupportTransactions(db) })
 
+export const useEditorName = () =>
+  useQuery({ queryKey: keys.editorName, queryFn: () => fetchEditorName(db) })
+
+export function useSaveEditorName() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (name: { firstName: string; lastName: string }) => saveEditorName(db, name),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.editorName }),
+  })
+}
+
 export const useSupportTotals = () =>
   useQuery({ queryKey: keys.supportTotals, queryFn: () => fetchSupportTotals(db) })
 
@@ -223,6 +240,24 @@ export const useSettlements = () =>
 
 export const useSettlementAccount = () =>
   useQuery({ queryKey: keys.settlementAccount, queryFn: () => fetchSettlementAccount(db) })
+
+/** What a payout covered. Only fetched once its row is opened. */
+export const useSettlementPayments = (settlementId: string | null) =>
+  useQuery({
+    queryKey: keys.settlementPayments(settlementId ?? ''),
+    enabled: settlementId !== null,
+    queryFn: () => fetchSettlementPayments(db, settlementId!),
+  })
+
+/**
+ * The same statement the operators hold — one renderer, called by both apps,
+ * so there is never a question of which of two documents is right.
+ */
+export const useDownloadStatement = () =>
+  useMutation({
+    mutationFn: (settlement: { id: string; reference: string }) =>
+      downloadSettlementReport(db, settlement),
+  })
 
 // ---------------------------------------------------------------------------
 // Mutations
