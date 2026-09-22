@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { sendEmailCode, verifyEmailCode } from '@amakefe/core'
 import { db } from '../db'
 
@@ -12,6 +12,14 @@ import { db } from '../db'
  * Two steps, both in place. Nothing navigates away, so the story stays where it
  * was and `onSignedIn` finishes the gesture that opened this.
  */
+
+/**
+ * Supabase sends at most one code per address per minute, so the resend is held
+ * shut for that long and says how long is left. Offering a button that only
+ * returns a rate-limit error would be worse than offering nothing — the reader
+ * would read it as the app failing rather than as the email being on its way.
+ */
+const RESEND_SECONDS = 60
 export function SignInSheet({
   reason,
   onSignedIn,
@@ -25,6 +33,9 @@ export function SignInSheet({
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resentAt, setResentAt] = useState<number | null>(null)
+  const [wait, setWait] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -33,16 +44,42 @@ export function SignInSheet({
     return () => document.removeEventListener('keydown', onKey)
   }, [busy, onClose])
 
-  const send = async () => {
+  // The countdown runs off a deadline rather than a tick count, so a phone that
+  // sleeps mid-wait comes back with the right number instead of a frozen one.
+  useEffect(() => {
+    if (wait <= 0) return
+    const timer = setInterval(() => setWait((left) => Math.max(0, left - 1)), 1000)
+    return () => clearInterval(timer)
+  }, [wait])
+
+  const send = useCallback(async () => {
     setBusy(true)
     setError(null)
     try {
       await sendEmailCode(db, email)
       setSent(true)
+      setWait(RESEND_SECONDS)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'That did not send.')
     } finally {
       setBusy(false)
+    }
+  }, [email])
+
+  const resend = async () => {
+    setResending(true)
+    setError(null)
+    try {
+      await sendEmailCode(db, email)
+      // The old code may still work, but a fresh field stops the reader typing
+      // digits from the first email into a prompt about the second.
+      setCode('')
+      setWait(RESEND_SECONDS)
+      setResentAt(Date.now())
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'That did not send.')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -108,18 +145,36 @@ export function SignInSheet({
             >
               {busy ? 'Checking…' : 'Confirm'}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setSent(false)
-                setCode('')
-                setError(null)
-              }}
-              disabled={busy}
-              className="mt-3 self-start text-xs text-accent disabled:opacity-40"
-            >
-              Use a different address
-            </button>
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              {wait > 0 ? (
+                <span className="text-xs text-muted">
+                  {resentAt ? 'Sent again. ' : ''}You can ask for another in {wait}s
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={resend}
+                  disabled={resending || busy}
+                  className="text-xs text-accent disabled:opacity-40"
+                >
+                  {resending ? 'Sending…' : 'Send another code'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setSent(false)
+                  setCode('')
+                  setError(null)
+                  setResentAt(null)
+                  setWait(0)
+                }}
+                disabled={busy || resending}
+                className="text-xs text-muted disabled:opacity-40"
+              >
+                Use a different address
+              </button>
+            </div>
           </>
         ) : (
           <>
