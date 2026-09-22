@@ -14,8 +14,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-const META_APP_ID = Deno.env.get('META_APP_ID') ?? ''
-const META_APP_SECRET = Deno.env.get('META_APP_SECRET') ?? ''
+const META_AUTHOR_APP_ID = Deno.env.get('META_AUTHOR_APP_ID') ?? ''
+const META_AUTHOR_APP_SECRET = Deno.env.get('META_AUTHOR_APP_SECRET') ?? ''
 const STUDIO_URL = Deno.env.get('STUDIO_URL') ?? 'http://localhost:5174'
 const GRAPH_VERSION = Deno.env.get('META_GRAPH_VERSION') ?? 'v23.0'
 
@@ -69,7 +69,7 @@ Deno.serve(async (req: Request) => {
     logErr('missing_params', { has_code: !!code, jwt_len: jwt.length })
     return backToStudio('error', 'Missing required parameters.')
   }
-  if (!META_APP_ID || !META_APP_SECRET) {
+  if (!META_AUTHOR_APP_ID || !META_AUTHOR_APP_SECRET) {
     logErr('missing_credentials', {})
     return backToStudio('error', 'Meta app credentials are not configured on the server.')
   }
@@ -102,8 +102,8 @@ Deno.serve(async (req: Request) => {
 
     // 1. The code buys a short-lived user token.
     const shortUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token`)
-    shortUrl.searchParams.set('client_id', META_APP_ID)
-    shortUrl.searchParams.set('client_secret', META_APP_SECRET)
+    shortUrl.searchParams.set('client_id', META_AUTHOR_APP_ID)
+    shortUrl.searchParams.set('client_secret', META_AUTHOR_APP_SECRET)
     shortUrl.searchParams.set('redirect_uri', redirectUri)
     shortUrl.searchParams.set('code', code)
     const shortRes = await fetch(shortUrl)
@@ -117,8 +117,8 @@ Deno.serve(async (req: Request) => {
     // 2. Trade it for one that lasts about sixty days.
     const longUrl = new URL(`https://graph.facebook.com/${GRAPH_VERSION}/oauth/access_token`)
     longUrl.searchParams.set('grant_type', 'fb_exchange_token')
-    longUrl.searchParams.set('client_id', META_APP_ID)
-    longUrl.searchParams.set('client_secret', META_APP_SECRET)
+    longUrl.searchParams.set('client_id', META_AUTHOR_APP_ID)
+    longUrl.searchParams.set('client_secret', META_AUTHOR_APP_SECRET)
     longUrl.searchParams.set('fb_exchange_token', shortData.access_token)
     const longRes = await fetch(longUrl)
     const longData = await longRes.json()

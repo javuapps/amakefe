@@ -10,7 +10,7 @@ import {
 } from '../hooks/queries'
 import { db } from '../db'
 
-const META_APP_ID = import.meta.env.VITE_META_APP_ID
+const META_AUTHOR_APP_ID = import.meta.env.VITE_META_AUTHOR_APP_ID
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 
 /**
@@ -55,14 +55,14 @@ export function SettingsScreen() {
 }
 
 function NotConnected() {
-  const configured = Boolean(META_APP_ID)
+  const configured = Boolean(META_AUTHOR_APP_ID)
 
   const connect = async () => {
     const { data } = await db.auth.getSession()
     const token = data.session?.access_token
     if (!token) return
     window.location.href = facebookAuthUrl({
-      appId: META_APP_ID!,
+      appId: META_AUTHOR_APP_ID!,
       supabaseUrl: SUPABASE_URL,
       accessToken: token,
     })
@@ -86,8 +86,8 @@ function NotConnected() {
       ) : (
         <p className="mt-4 rounded-lg border border-gold bg-surface-warm px-3 py-2 text-xs text-body">
           <span className="font-semibold">Not configured yet.</span> The Meta app id is missing —
-          set <code>VITE_META_APP_ID</code> for the studio, and <code>META_APP_ID</code>,{' '}
-          <code>META_APP_SECRET</code> and <code>STUDIO_URL</code> as Edge Function secrets.
+          set <code>VITE_META_AUTHOR_APP_ID</code> for the studio, and <code>META_AUTHOR_APP_ID</code>,{' '}
+          <code>META_AUTHOR_APP_SECRET</code> and <code>STUDIO_URL</code> as Edge Function secrets.
         </p>
       )}
 
