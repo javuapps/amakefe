@@ -1,16 +1,22 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { canonicalPath, deleteReaderAccount, storyMeta, type ReaderStats } from '@amakefe/core'
+import {
+  canonicalPath,
+  deleteReaderAccount,
+  NotSignedInError,
+  storyMeta,
+  type ReaderStats,
+} from '@amakefe/core'
 import { db } from '../db'
 import { useAuth } from '../auth'
-import { Async } from '../components/primitives'
-import { FacebookButton } from '../components/FacebookButton'
+import { Async, Pill } from '../components/primitives'
 import { useSignInPrompt } from '../hooks/useSignInPrompt'
 import {
   useCategories,
   useFollowedCategories,
   useReaderStats,
   useSavedStories,
+  useSetDisplayName,
   useToggleCategoryFollow,
 } from '../hooks/queries'
 
@@ -59,14 +65,20 @@ export function ProfileScreen() {
 /**
  * Who the reader is here.
  *
- * Signed in, that is their Facebook name and picture — the same identity their
- * comments and answers carry, so there is no gap between what they see here and
- * what other people see beside their words. Signed out, this is an invitation
- * rather than a demand: reading needs no account, and saying so is the point.
+ * An email address carries no name, so the reader chooses one and that is what
+ * appears beside anything they publish. Their address is never shown — not
+ * here, not anywhere — so the only identity on this screen is the name they
+ * picked and the initial drawn from it.
+ *
+ * Signed out, this is an invitation rather than a demand: reading needs no
+ * account, and saying so is the point.
  */
 function Identity({ stats }: { stats: ReaderStats }) {
-  const { session, signIn, signOut } = useAuth()
-  const [busy, setBusy] = useState(false)
+  const { session, signOut } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(stats.displayName ?? '')
+  const setName = useSetDisplayName()
+  const signIn = useSignInPrompt()
 
   const memberSince = stats.memberSince
     ? new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(stats.memberSince)
@@ -81,44 +93,77 @@ function Identity({ stats }: { stats: ReaderStats }) {
             Sign in to keep your saved stories and your place, on any phone.
           </div>
         </div>
-        <FacebookButton
-          busy={busy}
-          onClick={() => {
-            setBusy(true)
-            void signIn()
-          }}
-        />
+        <Pill
+          variant="ink"
+          className="self-start"
+          onClick={() => signIn.onError(new NotSignedInError(), 'Sign in to Mindful Moments')}
+        >
+          Sign in
+        </Pill>
+        {signIn.node}
       </div>
     )
   }
 
+  const save = () => {
+    setName.mutate(draft, { onSuccess: () => setEditing(false) })
+  }
+
   return (
     <div className="flex items-center gap-[14px]">
-      {stats.avatarUrl ? (
-        <img
-          src={stats.avatarUrl}
-          alt=""
-          className="size-[62px] shrink-0 rounded-full object-cover"
-        />
+      <div className="flex size-[62px] shrink-0 items-center justify-center rounded-full bg-surface-warm font-display text-[26px] text-accent">
+        {stats.displayName?.charAt(0).toUpperCase() ?? '·'}
+      </div>
+
+      {editing ? (
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => event.key === 'Enter' && save()}
+            maxLength={40}
+            placeholder="The name others see"
+            className="w-full rounded-tile border border-line-strong bg-surface-raised px-3 py-2 text-sm text-ink outline-none placeholder:text-subtle focus:border-accent"
+          />
+          <div className="flex items-center gap-3">
+            <Pill variant="ink" onClick={save} disabled={setName.isPending}>
+              {setName.isPending ? 'Saving…' : 'Save'}
+            </Pill>
+            <button type="button" onClick={() => setEditing(false)} className="text-xs text-muted">
+              Cancel
+            </button>
+          </div>
+          {setName.isError && (
+            <p className="text-xs text-accent-deep">That did not save. Try again in a moment.</p>
+          )}
+        </div>
       ) : (
-        <div className="flex size-[62px] shrink-0 items-center justify-center rounded-full bg-surface-warm font-display text-[26px] text-accent">
-          {stats.displayName?.charAt(0).toUpperCase() ?? '·'}
+        <div className="min-w-0">
+          <div className="truncate font-display text-[22px] text-ink">
+            {stats.displayName ?? 'No name yet'}
+          </div>
+          <div className="mt-1 text-[12.5px] text-muted">
+            {memberSince ? `Since ${memberSince} · ` : ''}
+            Your email is never shown
+          </div>
+          <div className="mt-1 flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(stats.displayName ?? '')
+                setEditing(true)
+              }}
+              className="text-xs text-accent"
+            >
+              {stats.displayName ? 'Change name' : 'Choose a name'}
+            </button>
+            <button type="button" onClick={() => void signOut()} className="text-xs text-muted">
+              Sign out
+            </button>
+          </div>
         </div>
       )}
-
-      <div className="min-w-0">
-        <div className="truncate font-display text-[22px] text-ink">
-          {stats.displayName ?? 'Signed in'}
-        </div>
-        {memberSince && <div className="mt-1 text-[12.5px] text-muted">Since {memberSince}</div>}
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="mt-1 text-xs text-accent"
-        >
-          Sign out
-        </button>
-      </div>
     </div>
   )
 }
@@ -236,10 +281,9 @@ function MyTopics() {
                   onClick={() =>
                     toggle.mutate(category.slug, {
                       onError: (error) =>
-                        signIn.onError(error, 'Follow this topic?', {
-                          kind: 'follow',
-                          categorySlug: category.slug,
-                        }),
+                        signIn.onError(error, 'Follow this topic?', () =>
+                          toggle.mutate(category.slug),
+                        ),
                     })
                   }
                   className={`rounded-full px-[14px] py-2 text-[13px] transition-colors ${

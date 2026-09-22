@@ -13,34 +13,26 @@ export type ReaderStats = {
   topics: number
   /** Null until the reader has signed in. */
   memberSince: Date | null
-  /** Their Facebook name, as it appears beside anything they publish. */
+  /**
+   * The name they chose, shown beside anything they publish.
+   *
+   * Null until they pick one — an email address carries no name, and the
+   * address itself is never shown to anyone.
+   */
   displayName: string | null
-  /** Their Facebook picture. */
-  avatarUrl: string | null
 }
 
 export async function fetchReaderStats(db: Db): Promise<ReaderStats> {
   const userId = await currentReaderId(db)
   if (!userId) {
-    return {
-      storiesRead: 0,
-      saved: 0,
-      topics: 0,
-      memberSince: null,
-      displayName: null,
-      avatarUrl: null,
-    }
+    return { storiesRead: 0, saved: 0, topics: 0, memberSince: null, displayName: null }
   }
 
   const [read, saved, topics, profile] = await Promise.all([
     db.from('usr_read_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     db.from('usr_bookmarks').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     db.from('usr_category_follows').select('*', { count: 'exact', head: true }).eq('user_id', userId),
-    db
-      .from('usr_profiles')
-      .select('display_name, avatar_url, created_at')
-      .eq('id', userId)
-      .maybeSingle(),
+    db.from('usr_profiles').select('display_name, created_at').eq('id', userId).maybeSingle(),
   ])
 
   return {
@@ -49,8 +41,24 @@ export async function fetchReaderStats(db: Db): Promise<ReaderStats> {
     topics: topics.count ?? 0,
     memberSince: profile.data?.created_at ? new Date(profile.data.created_at) : null,
     displayName: profile.data?.display_name ?? null,
-    avatarUrl: profile.data?.avatar_url ?? null,
   }
+}
+
+/**
+ * The name a reader publishes under.
+ *
+ * Two characters minimum, forty maximum — the same bounds the database
+ * enforces. Anything shorter is stored as null rather than rejected, so
+ * clearing the field is a way of withdrawing the name, not an error.
+ */
+export async function setDisplayName(db: Db, displayName: string | null): Promise<void> {
+  const userId = await requireReaderId(db)
+  const trimmed = displayName?.trim() ?? ''
+  const { error } = await db
+    .from('usr_profiles')
+    .update({ display_name: trimmed.length >= 2 ? trimmed.slice(0, 40) : null })
+    .eq('id', userId)
+  if (error) throw error
 }
 
 export async function fetchFollowedCategorySlugs(db: Db): Promise<Set<string>> {

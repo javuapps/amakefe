@@ -1,7 +1,6 @@
-import { useCallback, useState, type ReactNode } from 'react'
+import { useCallback, useRef, useState, type ReactNode } from 'react'
 import { isNotSignedIn } from '@amakefe/core'
 import { SignInSheet } from '../components/SignInSheet'
-import type { Intent } from '../auth'
 
 /**
  * What happens when a reader taps something that needs an account.
@@ -9,19 +8,25 @@ import type { Intent } from '../auth'
  * Every one of these actions used to call `.mutate()` with no error branch, so
  * a tap on Save or ♥ simply did nothing and said nothing — which reads as a
  * broken button, not as a request to sign in. Each now routes its failure here:
- * a missing account opens the sheet with the reason and the gesture to replay,
- * and anything else says so plainly instead of disappearing.
+ * a missing account opens the sheet, and anything else says so plainly instead
+ * of disappearing.
+ *
+ * The failed call is handed over with it and run again once the code checks
+ * out. Signing in stays on the page, so this is a retry rather than anything
+ * that has to survive a redirect.
  */
 export function useSignInPrompt(): {
-  onError: (error: unknown, reason: string, intent?: Intent) => void
+  onError: (error: unknown, reason: string, retry?: () => void) => void
   node: ReactNode
 } {
-  const [ask, setAsk] = useState<{ reason: string; intent?: Intent } | null>(null)
+  const [reason, setReason] = useState<string | null>(null)
   const [failed, setFailed] = useState<string | null>(null)
+  const retry = useRef<(() => void) | null>(null)
 
-  const onError = useCallback((error: unknown, reason: string, intent?: Intent) => {
+  const onError = useCallback((error: unknown, why: string, again?: () => void) => {
     if (isNotSignedIn(error)) {
-      setAsk({ reason, intent })
+      retry.current = again ?? null
+      setReason(why)
       return
     }
     setFailed('That did not work. Please try again in a moment.')
@@ -30,8 +35,15 @@ export function useSignInPrompt(): {
 
   const node = (
     <>
-      {ask && (
-        <SignInSheet reason={ask.reason} intent={ask.intent} onClose={() => setAsk(null)} />
+      {reason && (
+        <SignInSheet
+          reason={reason}
+          onSignedIn={() => retry.current?.()}
+          onClose={() => {
+            retry.current = null
+            setReason(null)
+          }}
+        />
       )}
       {failed && (
         <p

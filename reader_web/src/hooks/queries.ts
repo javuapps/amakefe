@@ -19,6 +19,7 @@ import {
   postAnswer,
   recordProgress,
   searchStories,
+  setDisplayName,
   toggleCategoryFollow,
   toggleReaction,
   toggleSaved,
@@ -162,3 +163,11 @@ export function useToggleCategoryFollow() {
   })
 }
 
+
+export function useSetDisplayName() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (name: string | null) => setDisplayName(db, name),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.readerStats }),
+  })
+}

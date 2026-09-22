@@ -5,7 +5,6 @@ import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from '
 
 import './styles.css'
 import { AuthProvider } from './auth'
-import { IntentReplay } from './components/IntentReplay'
 import { TabBar } from './components/TabBar'
 import { HomeScreen } from './screens/HomeScreen'
 
@@ -34,10 +33,6 @@ function Shell() {
       </main>
       <TabBar />
       <ScrollRestoration />
-      {/* Finishes whatever the reader was doing when they were sent to
-          Facebook. Mounted in the shell so it survives the route they land
-          back on. */}
-      <IntentReplay />
     </div>
   )
 }

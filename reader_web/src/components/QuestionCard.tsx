@@ -23,7 +23,10 @@ export function QuestionCard({ question }: { question: Question }) {
           setBody('')
           setAnswering(false)
         },
-        onError: (error) => signIn.onError(error, 'Post your answer?'),
+        onError: (error) =>
+          signIn.onError(error, 'Post your answer?', () =>
+            postAnswer.mutate({ questionId: question.id, body: trimmed }),
+          ),
       },
     )
   }
@@ -62,7 +65,7 @@ export function QuestionCard({ question }: { question: Question }) {
             <span className="text-xs text-muted">
               {session && stats.data?.displayName
                 ? `Posting as ${stats.data.displayName}`
-                : 'Posted under your name'}
+                : 'Posted under the name you choose'}
             </span>
             <div className="flex gap-2">
               <button

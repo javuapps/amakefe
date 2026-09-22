@@ -32,11 +32,9 @@ export function PollCard({ poll }: { poll: Poll }) {
                   { pollId: poll.id, optionId: option.optionId },
                   {
                     onError: (error) =>
-                      signIn.onError(error, 'Add your vote?', {
-                        kind: 'vote',
-                        pollId: poll.id,
-                        optionId: option.optionId,
-                      }),
+                      signIn.onError(error, 'Add your vote?', () =>
+                        vote.mutate({ pollId: poll.id, optionId: option.optionId }),
+                      ),
                   },
                 )
               }

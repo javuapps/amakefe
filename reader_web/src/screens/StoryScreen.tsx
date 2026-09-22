@@ -125,10 +125,9 @@ function StoryBody({
           onClick={() =>
             toggleSaved.mutate(story.card.id, {
               onError: (error) =>
-                signIn.onError(error, 'Save this for later?', {
-                  kind: 'save',
-                  storyId: story.card.id,
-                }),
+                signIn.onError(error, 'Save this for later?', () =>
+                  toggleSaved.mutate(story.card.id),
+                ),
             })
           }
           className={`text-[13px] font-semibold ${saved ? 'text-accent' : 'text-body'}`}
@@ -185,11 +184,9 @@ function StoryBody({
           onClick={() =>
             toggleReaction.mutate(story.card.id, {
               onError: (error) =>
-                signIn.onError(error, 'Let her know this reached you?', {
-                  kind: 'react',
-                  storyId: story.card.id,
-                  slug,
-                }),
+                signIn.onError(error, 'Let her know this reached you?', () =>
+                  toggleReaction.mutate(story.card.id),
+                ),
             })
           }
           className="flex items-center gap-2 text-sm text-body"

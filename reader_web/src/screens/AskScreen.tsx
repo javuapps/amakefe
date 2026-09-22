@@ -55,7 +55,8 @@ function AskForm() {
         setBody('')
         setSent(true)
       },
-      onError: (error) => signIn.onError(error, 'Send your question to Amake Fe?'),
+      onError: (error) =>
+        signIn.onError(error, 'Send your question to Amake Fe?', () => ask.mutate(trimmed)),
     })
   }
 

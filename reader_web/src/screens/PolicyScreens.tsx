@@ -2,12 +2,13 @@ import { Link } from 'react-router'
 import type { ReactNode } from 'react'
 
 /**
- * The policy pages Meta requires before an app can leave development.
+ * The policy pages.
  *
- * Facebook Login will not go live without a privacy policy URL, and an app
- * that stores personal data needs a deletion route people can actually follow.
- * They live in the reader app because the reader app is the only one ordinary
- * people sign in to — the studio has no public accounts.
+ * They outlived the reason they were written — Facebook Login needed a privacy
+ * policy URL — and an app that stores email addresses needs them anyway, along
+ * with a deletion route people can actually follow. They live in the reader app
+ * because it is the only one ordinary people sign in to; the studio has no
+ * public accounts.
  *
  * They are written to be read, not to be defended. Everything here is checked
  * against the schema: what is listed as collected is what the tables hold, and
@@ -62,7 +63,7 @@ export function PrivacyScreen() {
       <Section heading="The short version">
         <p>
           You can read every story here without an account and without telling us anything. If you
-          sign in with Facebook, we keep your name, your picture and the things you choose to do —
+          sign in, we keep your email address, a name you choose, and the things you choose to do —
           saving a story, reacting to one, answering a question. Nothing else.
         </p>
       </Section>
@@ -76,17 +77,19 @@ export function PrivacyScreen() {
       </Section>
 
       <Section heading="What we keep when you sign in">
-        <p>Signing in is Facebook Login. From Facebook we receive and store:</p>
+        <p>
+          Signing in is an email address and a six-digit code we send to it. There is no password.
+          We store:
+        </p>
         <List
           items={[
-            'Your name, as it appears on Facebook',
-            'Your profile picture',
-            'An account identifier, so we recognise you next time',
+            'Your email address, used to sign you in and for nothing else',
+            'A name you choose, which is what other people see',
           ]}
         />
         <p>
-          Facebook may also send your email address. We do not use it, display it or send you
-          anything.
+          We never show your email address to anyone, and we do not send you anything other than
+          the code you asked for.
         </p>
         <p>As you use the app we also keep:</p>
         <List
@@ -103,8 +106,8 @@ export function PrivacyScreen() {
 
       <Section heading="What other people can see">
         <p>
-          Your name and picture appear beside anything you post publicly — comments, and questions
-          and answers on Community — as they would on the Facebook page.
+          The name you chose appears beside anything you post publicly — comments, and questions and
+          answers on Community. Your email address never does.
         </p>
         <p>
           <strong>Questions you send to Amake Fe are published without your name.</strong> If she
@@ -132,8 +135,7 @@ export function PrivacyScreen() {
       <Section heading="Who else is involved">
         <List
           items={[
-            'Meta, when you sign in with Facebook',
-            'Supabase, which hosts the database and the app',
+            'Supabase, which hosts the database, the app and the sign-in email',
           ]}
         />
         <p>We do not sell anything to anyone, and there is no advertising here.</p>
@@ -187,8 +189,8 @@ export function TermsScreen() {
 
       <Section heading="Using your account">
         <p>
-          You sign in with Facebook, and you are responsible for what is posted from your account.
-          Post as yourself, and do not pretend to be someone else.
+          You sign in with your own email address, and you are responsible for what is posted from
+          your account. Choose a name that is yours to use, and do not pretend to be someone else.
         </p>
       </Section>
 
@@ -252,14 +254,14 @@ export function DataDeletionScreen() {
         </p>
         <p>
           If you would rather we did it, write to <span className="text-ink">{CONTACT}</span> from
-          the email address on your Facebook account, and we will remove it within 30 days.
+          the address you signed in with, and we will remove it within 30 days.
         </p>
       </Section>
 
       <Section heading="What is removed">
         <List
           items={[
-            'Your name, picture and account',
+            'Your account, your email address and the name you chose',
             'Stories you saved and where you had read up to',
             'Topics you followed',
             'Your reactions',

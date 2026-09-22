@@ -42,9 +42,10 @@ export function isNotSignedIn(error: unknown): error is NotSignedInError {
  * Reading needs no account at all — published content is readable by the `anon`
  * role, and the app opens straight onto Home. An identity appears the first time
  * a reader does something that has to be remembered (save, react, comment,
- * vote), and it is their Facebook account: a durable auth.uid() carrying their
- * name and picture, so a comment can be published under it the way it would be
- * on the Page itself.
+ * vote), and it is an email address they confirm with a code.
+ *
+ * An email carries no name, so the reader chooses one. It is what appears
+ * beside anything they publish; the address itself is never shown to anyone.
  *
  * Submitting is never anonymous. Where anonymity is required it is applied at
  * *publication* — a question to Amake Fe goes out unattributed, and the policy
@@ -63,27 +64,29 @@ export async function currentReaderId(db: Db): Promise<string | null> {
 }
 
 /**
- * Sends the reader to Facebook and back.
+ * Sends a six-digit code to an email address.
  *
- * `redirectTo` is the page they were on, so they return to the story they were
- * reading rather than to Home having lost their place.
+ * `shouldCreateUser` is on: there is no separate sign-up, and a reader who has
+ * never been here before is not a different case from one who has.
+ *
+ * Nothing about this leaves the page, which is the point — the reader stays in
+ * the story they were reading, and the action that prompted the sign-in can be
+ * finished the moment the code checks out.
  */
-export async function signInWithFacebook(db: Db, redirectTo: string): Promise<void> {
-  const { error } = await db.auth.signInWithOAuth({
-    provider: 'facebook',
-    options: { redirectTo },
+export async function sendEmailCode(db: Db, email: string): Promise<void> {
+  const { error } = await db.auth.signInWithOtp({
+    email: email.trim(),
+    options: { shouldCreateUser: true },
   })
   if (error) throw error
 }
 
-/**
- * Attaches Facebook to a session that already exists, keeping the same uid — so
- * anything already saved, read or reacted to survives the upgrade.
- */
-export async function linkFacebook(db: Db, redirectTo: string): Promise<void> {
-  const { error } = await db.auth.linkIdentity({
-    provider: 'facebook',
-    options: { redirectTo },
+/** Exchanges the emailed code for a session. */
+export async function verifyEmailCode(db: Db, email: string, code: string): Promise<void> {
+  const { error } = await db.auth.verifyOtp({
+    email: email.trim(),
+    token: code.trim(),
+    type: 'email',
   })
   if (error) throw error
 }
