@@ -134,6 +134,26 @@ const NETWORK_NAME: Record<string, string> = {
   zamtel: 'Zamtel Kwacha',
 }
 
+/**
+ * The places the ask appears, kept in step with `public.sup_placement` and
+ * with SUPPORT_PLACEMENTS in packages/core by hand — an Edge Function cannot
+ * import the workspace package, which is why the phone helpers above are
+ * copied too. The three move together.
+ *
+ * Anything unrecognised is recorded as null rather than refused. This column
+ * says where a button was; a label an old cached client got wrong must never
+ * be the reason a payment does not happen.
+ */
+const PLACEMENTS = new Set([
+  'support_screen',
+  'home_card',
+  'profile_row',
+  'story_end',
+  'community_post',
+  'stories_rail',
+  'community_rail',
+])
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -154,6 +174,8 @@ Deno.serve(async (req: Request) => {
   const operator: string = String(body?.operator ?? '')
   const phone: string = String(body?.phone ?? '')
   const payerName: string | null = body?.name ? String(body.name) : null
+  const placementSent = String(body?.placement ?? '')
+  const placement = PLACEMENTS.has(placementSent) ? placementSent : null
 
   if (!Number.isInteger(amountMinor) || amountMinor < MIN_MINOR || amountMinor > MAX_MINOR) {
     return json({ error: 'That amount cannot be taken.' }, 400)
@@ -206,6 +228,7 @@ Deno.serve(async (req: Request) => {
       operator,
       payer_mobile: msisdn,
       payer_name: payerName,
+      placement,
       internal_reference: reference,
       status: 'pending',
       expires_at: new Date(Date.now() + EXPIRES_AFTER_MINUTES * 60_000).toISOString(),

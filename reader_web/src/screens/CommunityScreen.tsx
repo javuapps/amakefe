@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { postState, type CommunityPost } from '@amakefe/core'
 import { Async, Pill } from '../components/primitives'
 import { PostCard } from '../components/PostCard'
+import { Appear } from '@amakefe/ui'
 import { Tabs } from '../components/Tabs'
 import { useAskQuestion, useCommunityFeed, useMyQuestions } from '../hooks/queries'
 import { useSignInPrompt } from '../hooks/useSignInPrompt'
@@ -36,7 +37,7 @@ export function CommunityScreen() {
         <AskForm />
       </div>
 
-      <div className="sticky top-0 z-10 -mx-5 mt-5 bg-surface/95 px-5 pt-3 pb-3 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 -mx-5 mt-5 bg-surface/95 px-5 pt-3 pb-3 backdrop-blur-sm lg:mx-0 lg:px-0">
         <Tabs
           value={tab}
           onChange={setTab}
@@ -44,7 +45,9 @@ export function CommunityScreen() {
         />
       </div>
 
-      {tab === 'Feed' ? <Feed /> : <MyQuestions />}
+      {/* The panel makes the same entrance a screen does, so switching tabs
+          reads as arriving somewhere rather than as the list redrawing. */}
+      <Appear trigger={tab}>{tab === 'Feed' ? <Feed /> : <MyQuestions />}</Appear>
     </div>
   )
 }

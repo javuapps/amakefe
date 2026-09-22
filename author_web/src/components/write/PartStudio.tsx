@@ -155,16 +155,16 @@ function Studio({
   const warnings = findings.filter((finding) => finding.level === 'warning').length
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#fbf7f0]">
-      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-8 py-[18px]">
+    <div className="modal-panel fixed inset-0 z-50 flex flex-col bg-[#fbf7f0]">
+      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-5 py-3 lg:px-8 lg:py-[18px]">
         <div className="min-w-0">
           <div className="text-[10.5px] uppercase tracking-[0.2em] text-muted">{label}</div>
-          <h1 className="truncate font-display text-[21px] leading-tight text-ink">
+          <h1 className="truncate font-display text-[17px] leading-tight text-ink lg:text-[21px]">
             {story.title}
           </h1>
         </div>
-        <div className="flex shrink-0 items-center gap-5">
-          <span className="text-xs text-muted">
+        <div className="flex shrink-0 items-center gap-3 lg:gap-5">
+          <span className="hidden text-xs text-muted sm:inline">
             {wordCount(body)} words
             {describeSaveState(autosave.state) && ` · ${describeSaveState(autosave.state)}`}
           </span>
@@ -179,7 +179,7 @@ function Studio({
       </header>
 
       {/* One scroll region, as everywhere else in the studio. */}
-      <div className="min-h-0 flex-1 overflow-y-auto p-8">
+      <div className="min-h-0 flex-1 overflow-y-auto p-5 lg:p-8">
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
           <div className="flex min-w-0 flex-col gap-4">
             {recovered && (

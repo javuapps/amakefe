@@ -33,6 +33,7 @@ import {
   fetchSettlementPayments,
   fetchSettlementAccount,
   fetchSettlements,
+  fetchSupportByPlacement,
   fetchSupportTotals,
   fetchSupportTransactions,
   saveEditorName,
@@ -76,6 +77,7 @@ export const keys = {
   askers: ['community', 'askers'] as const,
   support: ['support'] as const,
   supportTotals: ['supportTotals'] as const,
+  supportPlacements: ['supportPlacements'] as const,
   settlements: ['settlements'] as const,
   settlementAccount: ['settlementAccount'] as const,
   settlementPayments: (id: string) => ['settlementPayments', id] as const,
@@ -234,6 +236,10 @@ export function useSaveEditorName() {
 
 export const useSupportTotals = () =>
   useQuery({ queryKey: keys.supportTotals, queryFn: () => fetchSupportTotals(db) })
+
+/** Which ask people answer. Payments, not people — see the query. */
+export const useSupportPlacements = () =>
+  useQuery({ queryKey: keys.supportPlacements, queryFn: () => fetchSupportByPlacement(db) })
 
 export const useSettlements = () =>
   useQuery({ queryKey: keys.settlements, queryFn: () => fetchSettlements(db) })

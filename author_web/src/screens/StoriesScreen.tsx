@@ -158,7 +158,7 @@ function Sidebar() {
         <Async query={totals} loading={<div className="h-24 animate-pulse rounded-lg bg-surface-tint" />}>
           {(data) =>
             data && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Stat label="reads" value={data.views7d} />
                 <Stat label="reactions" value={data.reactions} />
                 <Stat label="comments" value={data.comments} />

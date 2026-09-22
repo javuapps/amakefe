@@ -369,11 +369,38 @@ export type Database = {
           },
         ]
       }
+      com_comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "com_comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "com_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       com_comments: {
         Row: {
           body: string
           created_at: string
           id: string
+          like_count: number
           parent_id: string | null
           status: Database["public"]["Enums"]["com_status"]
           story_id: string
@@ -384,6 +411,7 @@ export type Database = {
           body: string
           created_at?: string
           id?: string
+          like_count?: number
           parent_id?: string | null
           status?: Database["public"]["Enums"]["com_status"]
           story_id: string
@@ -394,6 +422,7 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
+          like_count?: number
           parent_id?: string | null
           status?: Database["public"]["Enums"]["com_status"]
           story_id?: string
@@ -959,6 +988,7 @@ export type Database = {
           operator: string | null
           payer_mobile: string | null
           payer_name: string | null
+          placement: Database["public"]["Enums"]["sup_placement"] | null
           provider: string
           provider_reference: string | null
           raw_provider_json: Json | null
@@ -983,6 +1013,7 @@ export type Database = {
           operator?: string | null
           payer_mobile?: string | null
           payer_name?: string | null
+          placement?: Database["public"]["Enums"]["sup_placement"] | null
           provider: string
           provider_reference?: string | null
           raw_provider_json?: Json | null
@@ -1007,6 +1038,7 @@ export type Database = {
           operator?: string | null
           payer_mobile?: string | null
           payer_name?: string | null
+          placement?: Database["public"]["Enums"]["sup_placement"] | null
           provider?: string
           provider_reference?: string | null
           raw_provider_json?: Json | null
@@ -1287,7 +1319,9 @@ export type Database = {
         Row: {
           category_name: string | null
           category_slug: string | null
+          comment_count: number | null
           cover_image_path: string | null
+          cover_path: string | null
           id: string | null
           like_count: number | null
           part_count: number | null
@@ -1496,7 +1530,9 @@ export type Database = {
         Returns: {
           category_name: string | null
           category_slug: string | null
+          comment_count: number | null
           cover_image_path: string | null
+          cover_path: string | null
           id: string | null
           like_count: number | null
           part_count: number | null
@@ -1578,6 +1614,15 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["sec_user_type"]
       }
+      sup_by_placement: {
+        Args: never
+        Returns: {
+          collected_minor: number
+          net_minor: number
+          payment_count: number
+          placement: Database["public"]["Enums"]["sup_placement"]
+        }[]
+      }
       sup_collection_status: {
         Args: { p_reference: string }
         Returns: {
@@ -1638,6 +1683,14 @@ export type Database = {
       sec_user_status: "active" | "suspended"
       sec_user_type: "reader" | "editorial" | "operator"
       sup_account_kind: "bank" | "mobile_money"
+      sup_placement:
+        | "support_screen"
+        | "home_card"
+        | "profile_row"
+        | "story_end"
+        | "community_post"
+        | "stories_rail"
+        | "community_rail"
       sup_settlement_status: "not_applicable" | "pending" | "settled"
       sup_status: "pending" | "successful" | "failed" | "reversed" | "refunded"
       usr_role:
@@ -1785,6 +1838,15 @@ export const Constants = {
       sec_user_status: ["active", "suspended"],
       sec_user_type: ["reader", "editorial", "operator"],
       sup_account_kind: ["bank", "mobile_money"],
+      sup_placement: [
+        "support_screen",
+        "home_card",
+        "profile_row",
+        "story_end",
+        "community_post",
+        "stories_rail",
+        "community_rail",
+      ],
       sup_settlement_status: ["not_applicable", "pending", "settled"],
       sup_status: ["pending", "successful", "failed", "reversed", "refunded"],
       usr_role: [

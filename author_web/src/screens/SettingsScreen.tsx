@@ -283,7 +283,7 @@ function YourAccount() {
               </p>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <label>
                 <span className="text-xs text-muted">First name</span>
                 <input

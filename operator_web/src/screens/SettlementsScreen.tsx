@@ -125,7 +125,7 @@ function SettleDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6"
+      className="modal-scrim fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Record a payout"
@@ -133,7 +133,7 @@ function SettleDialog({
         event.target === event.currentTarget && !settleIt.isPending && onClose()
       }
     >
-      <div className="w-full max-w-md rounded-card bg-surface p-6">
+      <div className="modal-panel w-full max-w-md rounded-card bg-surface p-6">
         <h2 className="font-display text-[21px] text-ink">Record a payout</h2>
         <p className="mt-2 text-sm leading-relaxed text-body">
           {formatKwacha(amountMinor)} to {accountName}, covering {formatCount(count)} payment

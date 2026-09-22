@@ -4,6 +4,7 @@ import {
   fetchSettlementAccount,
   fetchSettlementPayments,
   fetchSettlements,
+  fetchSupportByPlacement,
   fetchSupportTotals,
   fetchSupportTransactions,
   recordSettlementAccount,
@@ -21,6 +22,7 @@ import { db } from '../db'
 export const keys = {
   transactions: (status: Enums<'sup_status'> | 'all') => ['transactions', status] as const,
   totals: ['totals'] as const,
+  placements: ['placements'] as const,
   settlements: ['settlements'] as const,
   account: ['account'] as const,
   settlementPayments: (id: string) => ['settlementPayments', id] as const,
@@ -37,6 +39,10 @@ export const useTransactions = (status: Enums<'sup_status'> | 'all') =>
   })
 
 export const useTotals = () => useQuery({ queryKey: keys.totals, queryFn: () => fetchSupportTotals(db) })
+
+/** What each ask has brought in. Payments, not people — see the query. */
+export const usePlacements = () =>
+  useQuery({ queryKey: keys.placements, queryFn: () => fetchSupportByPlacement(db) })
 
 export const useSettlements = () =>
   useQuery({ queryKey: keys.settlements, queryFn: () => fetchSettlements(db) })
@@ -74,6 +80,9 @@ function useMoneyMutation<TArgs, TResult>(fn: (args: TArgs) => Promise<TResult>)
     onSuccess: () => {
       client.invalidateQueries({ queryKey: ['transactions'] })
       client.invalidateQueries({ queryKey: keys.totals })
+      // Reconciling is what moves a collection into `successful`, which is
+      // the only status the roll-up counts.
+      client.invalidateQueries({ queryKey: keys.placements })
       client.invalidateQueries({ queryKey: keys.settlements })
       client.invalidateQueries({ queryKey: keys.account })
     },

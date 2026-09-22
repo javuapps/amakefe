@@ -327,7 +327,7 @@ function Stats({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <Figure value={stats.views} label={`reads of ${label.toLowerCase()}`} />
         <Figure value={stats.views7d} label="this week" />
       </div>

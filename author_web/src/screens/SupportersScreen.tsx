@@ -4,6 +4,7 @@ import {
   formatDate,
   formatKwacha,
   networkName,
+  placementName,
   type Operator,
   type Settlement,
 } from '@amakefe/core'
@@ -14,6 +15,7 @@ import {
   useSettlementAccount,
   useSettlementPayments,
   useSettlements,
+  useSupportPlacements,
   useSupportTotals,
   useSupportTransactions,
 } from '../hooks/queries'
@@ -30,6 +32,7 @@ import {
 export function SupportersScreen() {
   const totals = useSupportTotals()
   const transactions = useSupportTransactions()
+  const placements = useSupportPlacements()
   const settlements = useSettlements()
   const account = useSettlementAccount()
   const [viewing, setViewing] = useState<Settlement | null>(null)
@@ -39,7 +42,7 @@ export function SupportersScreen() {
       <Async query={totals}>
         {(data) => (
           <>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <Stat label="Supporters" value={formatCount(data.supporters)} />
               <Stat label="Given in total" value={formatKwacha(data.collectedMinor)} />
               <Stat label="Yours so far" value={formatKwacha(data.netMinor)} />
@@ -93,6 +96,36 @@ export function SupportersScreen() {
         </Async>
       </Panel>
 
+      {/* Her number is the net, like the "Yours" column below — the gross is
+          the platform's to reconcile, not hers to read twice. */}
+      <Panel title="Where support comes from">
+        <Async query={placements}>
+          {(rows) =>
+            rows.length === 0 ? (
+              <p className="py-2 text-sm text-muted">Nothing has come in yet.</p>
+            ) : (
+              <ul className="flex flex-col gap-2 text-sm">
+                {rows.map((row) => (
+                  <li
+                    key={row.placement ?? 'unrecorded'}
+                    className="flex items-baseline justify-between gap-4"
+                  >
+                    <span>{placementName(row.placement)}</span>
+                    <span className="text-muted">
+                      {formatCount(row.paymentCount)} payments ·{' '}
+                      <span className="tabular-nums text-ink">{formatKwacha(row.netMinor)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </Async>
+        <p className="pt-3 text-xs text-muted">
+          Which ask people answer. Every story stays free wherever they answer it.
+        </p>
+      </Panel>
+
       <Panel title="Payouts">
         <Async query={settlements}>
           {(rows) =>
@@ -124,7 +157,8 @@ export function SupportersScreen() {
                 </p>
               </div>
             ) : (
-              <table className="w-full text-sm">
+              <div className="-mx-1 overflow-x-auto px-1">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-muted">
                     <th className="pb-2 font-normal">Date</th>
@@ -156,6 +190,7 @@ export function SupportersScreen() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )
           }
         </Async>

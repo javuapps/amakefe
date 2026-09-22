@@ -78,7 +78,7 @@ export function TopNav() {
               {/* The active marker is a rule on the bar's own bottom edge, not
                   a box around the link — it belongs to the bar. */}
               <span
-                className={`absolute inset-x-2 bottom-0 h-[2.5px] rounded-t ${
+                className={`absolute inset-x-2 bottom-0 h-[2.5px] rounded-t transition-colors duration-200 ${
                   isActive ? 'bg-accent' : 'bg-transparent'
                 }`}
                 aria-hidden

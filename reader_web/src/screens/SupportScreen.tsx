@@ -1,22 +1,31 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
-import { formatCount } from '@amakefe/core'
+import { Link, useSearchParams } from 'react-router'
+import {
+  SUPPORT_AMOUNTS,
+  SUPPORT_MIN_KWACHA,
+  supporterLine,
+  isPlacement,
+  type SupportPlacement,
+} from '@amakefe/core'
 import { useSupporterCount } from '../hooks/queries'
 import { SupportSheet } from '../components/SupportSheet'
-
-const AMOUNTS = [10, 25, 50, 100, 250] as const
-
-/** The floor the Edge Function enforces, so the screen can say so first. */
-const MIN_KWACHA = 5
 
 export function SupportScreen() {
   const [amount, setAmount] = useState<number | 'custom'>(25)
   const [custom, setCustom] = useState('')
   const [giving, setGiving] = useState<number | null>(null)
   const supporters = useSupporterCount()
+  const [params] = useSearchParams()
+
+  // Where they were when they decided. The asks that link here rather than
+  // opening the sheet — the card on Home, the row on Profile, "Another amount"
+  // — say so in the URL, so the ask that moved someone still gets the credit
+  // for what they give. Anything unrecognised is this screen.
+  const from = params.get('from')
+  const placement: SupportPlacement = isPlacement(from) ? from : 'support_screen'
 
   const chosen = amount === 'custom' ? Number(custom) || 0 : amount
-  const tooSmall = chosen < MIN_KWACHA
+  const tooSmall = chosen < SUPPORT_MIN_KWACHA
 
   return (
     <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-8 lg:mx-auto lg:w-full lg:max-w-[560px] lg:px-6 lg:pt-10 lg:pb-16">
@@ -33,7 +42,7 @@ export function SupportScreen() {
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-[10px]">
-        {AMOUNTS.map((value) => (
+        {SUPPORT_AMOUNTS.map((value) => (
           <AmountTile
             key={value}
             label={`ZMW ${value}`}
@@ -89,7 +98,7 @@ export function SupportScreen() {
       <div className="mt-[26px] rounded-card bg-surface-warm p-[18px]">
         <h2 className="font-display text-[18px] text-ink">
           {supporters.data
-            ? `${formatCount(supporters.data)} people support this community`
+            ? supporterLine(supporters.data)
             : 'Be the first to support this community'}
         </h2>
         <p className="mt-[6px] text-[13.5px] leading-relaxed text-body">
@@ -98,7 +107,7 @@ export function SupportScreen() {
       </div>
 
       {giving !== null && (
-        <SupportSheet amountMinor={giving} onClose={() => setGiving(null)} />
+        <SupportSheet amountMinor={giving} placement={placement} onClose={() => setGiving(null)} />
       )}
     </div>
   )

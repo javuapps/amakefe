@@ -73,7 +73,7 @@ function ConfirmDialog({ request }: { request: Request }) {
     // Above the full-screen studio and the new-story dialog, both of which can
     // be the thing asking.
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 p-6"
+      className="modal-scrim fixed inset-0 z-[60] flex items-center justify-center bg-ink/60 p-6"
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -81,7 +81,7 @@ function ConfirmDialog({ request }: { request: Request }) {
         if (event.target === event.currentTarget) settle(false)
       }}
     >
-      <div className="w-full max-w-sm rounded-card border border-line-card bg-surface p-5 shadow-xl">
+      <div className="modal-panel w-full max-w-sm rounded-card border border-line-card bg-surface p-5 shadow-xl">
         <h2 className="font-display text-[19px] leading-snug text-ink">{title}</h2>
         {body && <p className="mt-2 text-[13px] leading-relaxed text-body">{body}</p>}
 

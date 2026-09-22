@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { Appear } from '@amakefe/ui'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { useAuth } from '../auth'
 
@@ -66,7 +67,9 @@ export function Shell() {
         </header>
 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-8">
-          <Outlet />
+          <Appear trigger={pathname}>
+            <Outlet />
+          </Appear>
         </main>
       </div>
     </div>

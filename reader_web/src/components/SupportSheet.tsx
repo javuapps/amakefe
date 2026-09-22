@@ -8,6 +8,7 @@ import {
   operatorForPhone,
   walletProblem,
   type Operator,
+  type SupportPlacement,
 } from '@amakefe/core'
 import { useCollectionStatus, useStartCollection } from '../hooks/queries'
 
@@ -25,9 +26,11 @@ import { useCollectionStatus, useStartCollection } from '../hooks/queries'
  */
 export function SupportSheet({
   amountMinor,
+  placement,
   onClose,
 }: {
   amountMinor: number
+  placement: SupportPlacement
   onClose: () => void
 }) {
   const [operator, setOperator] = useState<Operator | null>(null)
@@ -63,7 +66,7 @@ export function SupportSheet({
   const submit = () => {
     if (!operator || !ready) return
     start.mutate(
-      { amountMinor, operator, phone: localPhone(phone) },
+      { amountMinor, operator, phone: localPhone(phone), placement },
       { onSuccess: setReference },
     )
   }

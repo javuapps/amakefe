@@ -17,6 +17,8 @@ import {
   fetchPostComments,
   fetchReactedPostIds,
   postComment,
+  postStoryComment,
+  toggleCommentReaction,
   togglePostReaction,
   fetchRelated,
   fetchFollowedCategorySlugs,
@@ -25,6 +27,8 @@ import {
   fetchSavedStories,
   fetchStory,
   fetchCollectionStatus,
+  fetchCommentThread,
+  fetchReactedCommentIds,
   fetchSupporterCount,
   recordProgress,
   searchStories,
@@ -74,6 +78,8 @@ export const keys = {
   followedCategories: ['followedCategories'] as const,
   supporterCount: ['supporterCount'] as const,
   collection: (reference: string) => ['collection', reference] as const,
+  storyComments: (storyId: string) => ['storyComments', storyId] as const,
+  reactedComments: (storyId: string) => ['reactedComments', storyId] as const,
 }
 
 export const useCategories = () =>
@@ -219,6 +225,49 @@ export function useCastVote() {
     onSuccess: (_data, { postId }) => {
       client.invalidateQueries({ queryKey: keys.poll(postId) })
       client.invalidateQueries({ queryKey: keys.community })
+    },
+  })
+}
+
+/**
+ * A story's thread. Only fetched once the sheet is opened — the count beside
+ * the icon comes from the story card, so the closed state costs nothing.
+ */
+export const useStoryComments = (storyId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: keys.storyComments(storyId),
+    enabled,
+    queryFn: () => fetchCommentThread(db, storyId),
+  })
+
+export const useReactedComments = (storyId: string, ids: string[], enabled: boolean) =>
+  useQuery({
+    queryKey: keys.reactedComments(storyId),
+    enabled: enabled && ids.length > 0,
+    queryFn: () => fetchReactedCommentIds(db, ids),
+  })
+
+export function usePostStoryComment(slug: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ storyId, body }: { storyId: string; body: string }) =>
+      postStoryComment(db, storyId, body),
+    onSuccess: (_data, { storyId }) => {
+      client.invalidateQueries({ queryKey: keys.storyComments(storyId) })
+      // The count lives on the story card, so the icon beside the thread is
+      // stale until the story itself is refetched.
+      client.invalidateQueries({ queryKey: keys.story(slug) })
+    },
+  })
+}
+
+export function useToggleCommentReaction(storyId: string) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (commentId: string) => toggleCommentReaction(db, commentId),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: keys.storyComments(storyId) })
+      client.invalidateQueries({ queryKey: keys.reactedComments(storyId) })
     },
   })
 }

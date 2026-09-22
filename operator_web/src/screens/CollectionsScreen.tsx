@@ -5,10 +5,11 @@ import {
   formatKwacha,
   localPhone,
   networkName,
+  placementName,
   type Enums,
 } from '@amakefe/core'
 import { Async, Panel, Stat } from '../components/shell'
-import { useReconcile, useTotals, useTransactions } from '../hooks/queries'
+import { usePlacements, useReconcile, useTotals, useTransactions } from '../hooks/queries'
 
 /**
  * The ledger, as the people who process it read it.
@@ -28,6 +29,7 @@ export function CollectionsScreen() {
   const [filter, setFilter] = useState<Enums<'sup_status'> | 'all'>('all')
   const totals = useTotals()
   const transactions = useTransactions(filter)
+  const placements = usePlacements()
   const reconcile = useReconcile()
 
   return (
@@ -46,6 +48,39 @@ export function CollectionsScreen() {
           </div>
         )}
       </Async>
+
+      <Panel title="Where support comes from">
+        <Async query={placements}>
+          {(rows) =>
+            rows.length === 0 ? (
+              <p className="py-2 text-sm text-muted">No payments have settled yet.</p>
+            ) : (
+              <ul className="flex flex-col gap-2 text-sm">
+                {rows.map((row) => (
+                  <li
+                    key={row.placement ?? 'unrecorded'}
+                    className="flex items-baseline justify-between gap-4"
+                  >
+                    <span>{placementName(row.placement)}</span>
+                    <span className="text-muted">
+                      {formatCount(row.paymentCount)} payments ·{' '}
+                      <span className="tabular-nums text-ink">
+                        {formatKwacha(row.collectedMinor)}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </Async>
+        {/* It counts payments an ask produced, never the readers who saw it
+            and moved on — so it answers where support comes from and not
+            which ask works hardest. */}
+        <p className="pt-3 text-xs text-muted">
+          Payments, not people, and no count of who saw each ask.
+        </p>
+      </Panel>
 
       <Panel
         title="Payments"
@@ -104,6 +139,7 @@ export function CollectionsScreen() {
                     <th className="pb-2 font-normal">Started</th>
                     <th className="pb-2 font-normal">Reference</th>
                     <th className="pb-2 font-normal">Network</th>
+                    <th className="pb-2 font-normal">From</th>
                     <th className="pb-2 font-normal">Number</th>
                     <th className="pb-2 font-normal">Status</th>
                     <th className="pb-2 font-normal">Payout</th>
@@ -118,6 +154,7 @@ export function CollectionsScreen() {
                       <td className="py-3 whitespace-nowrap">{formatDate(row.createdAt)}</td>
                       <td className="text-muted">{row.reference}</td>
                       <td>{row.operator ? networkName(row.operator) : row.provider}</td>
+                      <td className="text-muted">{placementName(row.placement)}</td>
                       <td className="tabular-nums">
                         {row.payerMobile ? localPhone(row.payerMobile) : '—'}
                       </td>

@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import type { UseQueryResult } from '@tanstack/react-query'
+import { Appear } from '@amakefe/ui'
 import { useAuth } from '../auth'
 import { useStudioTotals } from '../hooks/queries'
 import { Mark } from './Mark'
@@ -48,6 +49,12 @@ export function Shell() {
 
 function ShellFrame() {
   const { pathname } = useLocation()
+  const [navOpen, setNavOpen] = useState(false)
+
+  // A tap on a destination should close the drawer it was tapped in. Keyed on
+  // the path rather than wired to every link, so a navigation from anywhere —
+  // a story row, a redirect after publishing — closes it too.
+  useEffect(() => setNavOpen(false), [pathname])
   const { session, account, signOut } = useAuth()
   const [title, subtitle] = titleFor(pathname)
   const email = session?.user.email ?? ''
@@ -59,7 +66,30 @@ function ShellFrame() {
     // content column does, so the sidebar and the page header stay put however
     // long the list of stories gets.
     <div className="flex h-dvh overflow-hidden bg-[#fbf7f0]">
-      <aside className="on-ink flex w-[244px] shrink-0 flex-col overflow-y-auto bg-ink py-6">
+      {/* The scrim exists only while the drawer does, and only below `lg`. */}
+      {navOpen && (
+        <button
+          type="button"
+          aria-label="Close the menu"
+          onClick={() => setNavOpen(false)}
+          className="drawer-scrim fixed inset-0 z-40 bg-ink/50 lg:hidden"
+        />
+      )}
+
+      {/*
+       * A column on a desk, a drawer in a hand.
+       *
+       * The studio has nine destinations in three groups and a dark identity
+       * panel; none of that survives being flattened into a bar, so below `lg`
+       * it slides in over the work instead of sitting beside it. `fixed` rather
+       * than a collapsing width, so the content column gets the whole screen
+       * and never reflows as the drawer opens.
+       */}
+      <aside
+        className={`on-ink fixed inset-y-0 left-0 z-50 flex w-[244px] shrink-0 flex-col overflow-y-auto bg-ink py-6 transition-transform duration-300 lg:static lg:translate-x-0 lg:transition-none ${
+          navOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         <div className="flex items-center gap-[11px] px-[22px] pb-[26px]">
           <Mark size={38} />
           <div>
@@ -91,16 +121,31 @@ function ShellFrame() {
       </aside>
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="flex shrink-0 items-center justify-between border-b border-line bg-[#fbf7f0] px-8 py-[22px]">
-          <div>
-            <h1 className="font-display text-[23px] leading-tight text-ink">{title}</h1>
-            <p className="mt-[3px] text-[13px] text-muted">{subtitle}</p>
+        <header className="flex shrink-0 items-center gap-3 border-b border-line bg-[#fbf7f0] px-5 py-4 lg:justify-between lg:px-8 lg:py-[22px]">
+          <button
+            type="button"
+            onClick={() => setNavOpen(true)}
+            aria-label="Open the menu"
+            aria-expanded={navOpen}
+            className="-ml-1 shrink-0 p-1 text-ink lg:hidden"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+          </button>
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-[19px] leading-tight text-ink lg:text-[23px]">
+              {title}
+            </h1>
+            <p className="mt-[3px] hidden text-[13px] text-muted sm:block">{subtitle}</p>
           </div>
-          <p className="text-xs text-muted">{email}</p>
+          <p className="hidden text-xs text-muted lg:block">{email}</p>
         </header>
 
-        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-8">
-          <Outlet />
+        <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-5 lg:p-8">
+          <Appear trigger={pathname}>
+            <Outlet />
+          </Appear>
         </main>
       </div>
     </div>
@@ -287,8 +332,11 @@ export function Panel({
 }) {
   return (
     <section className="rounded-card border border-line-card bg-surface p-5">
+      {/* The header wraps, because `actions` is sometimes a whole control —
+          the dashboard puts a story picker there — and a title plus a select
+          on one unbreakable row is 440px of content in a 320px panel. */}
       {(title || actions) && (
-        <div className="mb-4 flex items-baseline justify-between">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
           {title && <h2 className="font-display text-[19px] text-ink">{title}</h2>}
           {actions}
         </div>

@@ -33,3 +33,15 @@ export function formatRelative(date: Date, now: Date = new Date()): string {
 
 /** Thousands separators, as the like counter in the prototype shows them. */
 export const formatCount = (value: number): string => value.toLocaleString('en-GB')
+
+/**
+ * "1 person supports this community", "1,842 people support this community".
+ *
+ * One sentence in one place because it appears in two — the ask beside a story
+ * and the Support screen — and both were printing "1 people support", which a
+ * first supporter would see and nobody testing with seed data ever would.
+ */
+export const supporterLine = (count: number): string =>
+  count === 1
+    ? '1 person supports this community'
+    : `${formatCount(count)} people support this community`

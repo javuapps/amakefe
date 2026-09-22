@@ -128,7 +128,7 @@ function Posted({
       {stats.isPending ? (
         <div className="h-14 animate-pulse rounded-lg bg-surface-tint" />
       ) : stats.data ? (
-        <dl className="grid grid-cols-4 gap-2">
+        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Figure label="Reactions" value={stats.data.reactions} />
           <Figure label="Comments" value={stats.data.comments} />
           <Figure label="Shares" value={stats.data.shares} />

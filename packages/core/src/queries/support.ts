@@ -1,6 +1,6 @@
 import type { Db } from '../supabase'
 import type { Enums, Tables } from '../database.types'
-import { networkName, type Operator } from '../support'
+import { networkName, type Operator, type SupportPlacement } from '../support'
 
 /**
  * Supporting the community.
@@ -24,6 +24,12 @@ export type CollectionRequest = {
   phone: string
   /** What to call them on the receipt. Optional — giving needs no name. */
   name?: string
+  /**
+   * Which ask was answered. Optional because a caller that does not know is
+   * better recorded as not knowing; the function writes null for anything it
+   * does not recognise rather than refusing the payment.
+   */
+  placement?: SupportPlacement
 }
 
 /**
@@ -108,6 +114,8 @@ export type SupportTransaction = {
   reference: string | null
   status: Enums<'sup_status'>
   settlementStatus: Enums<'sup_settlement_status'>
+  /** Where the ask was. Null for a collection that named none. */
+  placement: SupportPlacement | null
   createdAt: Date
   completedAt: Date | null
 }
@@ -127,6 +135,7 @@ const toTransaction = (row: Tables<'sup_transactions'>): SupportTransaction => (
   reference: row.internal_reference,
   status: row.status,
   settlementStatus: row.settlement_status,
+  placement: row.placement,
   createdAt: new Date(row.created_at),
   completedAt: row.completed_at ? new Date(row.completed_at) : null,
 })
@@ -176,6 +185,37 @@ export async function fetchSupportTotals(db: Db): Promise<SupportTotals> {
     awaitingCount: row?.awaiting_count ?? 0,
     settledMinor: row?.settled_minor ?? 0,
   }
+}
+
+/**
+ * What each ask has brought in.
+ *
+ * Counts payments, not people: `sup_totals` counts distinct supporters because
+ * the platform total means "how many of us are there", while one supporter
+ * giving from Home in March and from a story in April is two answers to two
+ * asks and has to read as two.
+ *
+ * What it cannot tell anyone is conversion. Nothing counts the readers who saw
+ * an ask and moved on, so this answers "where does support come from" and
+ * never "which ask works hardest".
+ */
+export type SupportByPlacement = {
+  placement: SupportPlacement | null
+  paymentCount: number
+  collectedMinor: number
+  netMinor: number
+}
+
+/** Staff and operators only; the function checks rather than the grant. */
+export async function fetchSupportByPlacement(db: Db): Promise<SupportByPlacement[]> {
+  const { data, error } = await db.rpc('sup_by_placement')
+  if (error) throw error
+  return (data ?? []).map((row) => ({
+    placement: row.placement,
+    paymentCount: row.payment_count,
+    collectedMinor: row.collected_minor,
+    netMinor: row.net_minor,
+  }))
 }
 
 export type Settlement = {

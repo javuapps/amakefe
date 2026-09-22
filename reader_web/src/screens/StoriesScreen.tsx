@@ -42,7 +42,7 @@ export function StoriesScreen() {
        *  does not show through at the edges as rows slide underneath. */}
       {/* Sticky to the scroll container, which is the window on a phone and the
           content area from `lg` — the top bar sits above it either way. */}
-      <div className="sticky top-0 z-10 bg-surface/95 px-5 pt-[10px] pb-2 backdrop-blur-sm lg:-mx-6 lg:px-6 lg:pt-4 lg:pb-3">
+      <div className="sticky top-0 z-10 bg-surface/95 px-5 pt-[10px] pb-2 backdrop-blur-sm lg:mx-0 lg:px-0 lg:pt-4 lg:pb-3">
         <div className="relative">
           <svg
             className="absolute top-1/2 left-4 -translate-y-1/2 text-subtle"

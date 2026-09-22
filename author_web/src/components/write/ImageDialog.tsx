@@ -50,7 +50,7 @@ export function ImageDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6"
+      className="modal-scrim fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-6"
       role="dialog"
       aria-modal="true"
       aria-label="Add an image"
@@ -60,7 +60,7 @@ export function ImageDialog({
     >
       <form
         onSubmit={submit}
-        className="w-full max-w-md rounded-card border border-line-card bg-surface p-5 shadow-xl"
+        className="modal-panel w-full max-w-md rounded-card border border-line-card bg-surface p-5 shadow-xl"
       >
         <h2 className="font-display text-[19px] text-ink">Add an image</h2>
 

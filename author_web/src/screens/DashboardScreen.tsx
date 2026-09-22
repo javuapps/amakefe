@@ -17,7 +17,7 @@ export function DashboardScreen() {
       <Async query={stats} loading={<div className="h-24 animate-pulse rounded-card bg-surface-tint" />}>
         {(data) =>
           data && (
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               <Stat label="Readers this week" value={formatCount(data.weeklyReaders)} />
               <Stat
                 label="Stories started"
@@ -50,7 +50,8 @@ export function DashboardScreen() {
             rows.length === 0 ? (
               <p className="text-sm text-muted">No published stories yet.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className="-mx-1 overflow-x-auto px-1">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-muted">
                     <th className="pb-2 font-normal">Story</th>
@@ -79,6 +80,7 @@ export function DashboardScreen() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )
           }
         </Async>
@@ -117,7 +119,9 @@ function SeriesRetention() {
         <select
           value={storyId}
           onChange={(event) => setSelected(event.target.value)}
-          className="rounded-lg border border-line-card bg-surface px-3 py-1.5 text-sm text-ink"
+          // A select is as wide as its widest option unless told otherwise,
+          // and these options are story titles.
+          className="max-w-full rounded-lg border border-line-card bg-surface px-3 py-1.5 text-sm text-ink"
         >
           {series.map((story) => (
             <option key={story.id} value={story.id}>

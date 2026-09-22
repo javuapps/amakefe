@@ -43,7 +43,7 @@ export function ProfileScreen() {
       <SavedStories />
 
       <div className="flex flex-col pt-1">
-        <Link to="/support" className="flex items-center justify-between border-t border-line-soft py-[15px] text-sm text-ink">
+        <Link to="/support?from=profile_row" className="flex items-center justify-between border-t border-line-soft py-[15px] text-sm text-ink">
           Support the community <span className="text-[#a89684]">›</span>
         </Link>
         <Link to="/share" className="flex items-center justify-between border-t border-line-soft py-[15px] text-sm text-ink">

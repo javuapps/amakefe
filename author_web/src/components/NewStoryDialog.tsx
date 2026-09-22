@@ -61,8 +61,8 @@ function NewStoryDialog({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#fbf7f0]">
-      <header className="flex shrink-0 items-center justify-between border-b border-line px-8 py-[22px]">
+    <div className="modal-panel fixed inset-0 z-50 flex flex-col bg-[#fbf7f0]">
+      <header className="flex shrink-0 items-center justify-between border-b border-line px-5 py-4 lg:px-8 lg:py-[22px]">
         <div>
           <h1 className="font-display text-[23px] leading-tight text-ink">Start a story</h1>
           <p className="mt-[3px] text-[13px] text-muted">
@@ -74,7 +74,7 @@ function NewStoryDialog({ onClose }: { onClose: () => void }) {
         </button>
       </header>
 
-      <form onSubmit={submit} className="min-h-0 flex-1 overflow-y-auto p-8">
+      <form onSubmit={submit} className="min-h-0 flex-1 overflow-y-auto p-5 lg:p-8">
         <div className="mx-auto flex max-w-xl flex-col gap-5">
           <Labelled label="Title" hint="Required. It becomes the story's address, so it is worth getting right.">
             <input
@@ -97,7 +97,7 @@ function NewStoryDialog({ onClose }: { onClose: () => void }) {
 
           <fieldset className="flex flex-col gap-2">
             <legend className="text-xs text-muted">Type</legend>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <TypeCard
                 selected={storyType === 'single'}
                 onSelect={() => setStoryType('single')}

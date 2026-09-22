@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import {
   COMMISSION_RATE_BPS,
+  SUPPORT_AMOUNTS,
+  SUPPORT_MIN_KWACHA,
+  SUPPORT_PLACEMENTS,
   commissionMinor,
   internationalPhone,
+  isPlacement,
   localPhone,
   netMinor,
   operatorForPhone,
+  placementName,
   walletProblem,
 } from '../src/support'
 
@@ -67,5 +72,50 @@ describe('what to say when the network is wrong', () => {
 
   it('catches a number that is not Zambian at all', () => {
     expect(walletProblem('mtn', '123')).toMatch(/does not look like/)
+  })
+})
+
+describe('what a supporter is offered', () => {
+  it('never offers less than the floor the function enforces', () => {
+    for (const amount of SUPPORT_AMOUNTS) {
+      expect(amount).toBeGreaterThanOrEqual(SUPPORT_MIN_KWACHA)
+      expect(Number.isInteger(amount)).toBe(true)
+    }
+  })
+
+  // MIN_MINOR in supabase/functions/lenco-collect is the copy that counts;
+  // this pins the screen's copy to it, for the same reason commissionMinor is
+  // pinned to sup_commission_minor — the two cannot be imported into one
+  // program and so cannot be checked by the compiler.
+  it('agrees with the floor in lenco-collect', () => {
+    expect(SUPPORT_MIN_KWACHA * 100).toBe(500)
+  })
+
+  it('rises, so the shorter asks can take the first three', () => {
+    expect([...SUPPORT_AMOUNTS]).toEqual([...SUPPORT_AMOUNTS].sort((a, b) => a - b))
+  })
+})
+
+describe('naming an ask', () => {
+  // Fails the moment somebody adds a placement to the enum and to this list
+  // without giving it a name — which is the omission that would otherwise put
+  // a raw `stories_rail` in front of the operators.
+  it('has a sentence for every placement the database can store', () => {
+    for (const placement of SUPPORT_PLACEMENTS) {
+      expect(placementName(placement)).not.toBe('Not recorded')
+    }
+  })
+
+  it('says so plainly when nothing was recorded', () => {
+    expect(placementName(null)).toBe('Not recorded')
+  })
+
+  it('refuses anything that is not a placement', () => {
+    expect(isPlacement('story_end')).toBe(true)
+    expect(isPlacement('story-end')).toBe(false)
+    expect(isPlacement('')).toBe(false)
+    expect(isPlacement(null)).toBe(false)
+    expect(isPlacement(undefined)).toBe(false)
+    expect(isPlacement(7)).toBe(false)
   })
 })

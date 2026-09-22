@@ -1,9 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router'
+import {
+  createBrowserRouter,
+  Outlet,
+  RouterProvider,
+  ScrollRestoration,
+  useLocation,
+} from 'react-router'
 
 import { Link } from 'react-router'
+import { Appear } from '@amakefe/ui'
 import './styles.css'
 import { AuthProvider } from './auth'
 import { Mark } from './components/Mark'
@@ -71,6 +78,8 @@ function Crashed() {
  * the three zones cannot all fit without one of them becoming a puzzle.
  */
 function Shell() {
+  const { pathname } = useLocation()
+
   return (
     <div className="bg-surface lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden">
       <header className="hidden shrink-0 border-b border-line bg-surface lg:block">
@@ -99,7 +108,9 @@ function Shell() {
           `lg` it is the only scroll region, so the bar above stays put. */}
       <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col lg:min-h-0 lg:max-w-none lg:flex-1 lg:overflow-y-auto">
         <main className="flex-1">
-          <Outlet />
+          <Appear trigger={pathname}>
+            <Outlet />
+          </Appear>
         </main>
         <TabBar />
       </div>

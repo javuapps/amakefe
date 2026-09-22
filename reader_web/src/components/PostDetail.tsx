@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { formatCount, formatRelative, optionShare, type CommunityPost } from '@amakefe/core'
 import { Mark } from './Mark'
 import { SectionLabel } from './primitives'
+import { SupportAsk } from './SupportAsk'
 import {
   useCastVote,
   usePollDetail,
@@ -43,8 +44,12 @@ export function PostDetail({ post, onClose }: { post: CommunityPost; onClose: ()
      * The chrome spans the window; the reading does not. The body is capped to
      * a measure inside it, the same way the settlement statement is.
      */
-    <div className="fixed inset-0 z-50 flex justify-center bg-ink/40" role="dialog" aria-modal="true">
-      <div className="flex h-full w-full max-w-[520px] flex-col bg-surface lg:max-w-none">
+    <div
+      className="modal-scrim fixed inset-0 z-50 flex justify-center bg-ink/40"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="modal-panel flex h-full w-full max-w-[520px] flex-col bg-surface lg:max-w-none">
         <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line-soft px-5 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-3 lg:px-8 lg:py-[18px]">
           <span className="font-display text-[17px] text-ink lg:text-[21px]">
             {post.kind === 'poll' ? 'Poll' : post.kind === 'notice' ? 'From Amake Fe' : 'Question'}
@@ -59,6 +64,15 @@ export function PostDetail({ post, onClose }: { post: CommunityPost; onClose: ()
             <Body post={post} />
             <Engagement post={post} />
             <Comments postId={post.id} />
+
+            {/* Every kind — a question, a poll and a notice are all something
+                somebody came here to read, and branching on `post.kind` would
+                be three rules to keep in step. The rule above it separates it
+                from the comment box, so it reads as the app asking rather than
+                as a reply to the conversation. */}
+            <div className="mt-8 border-t border-line-soft pt-6">
+              <SupportAsk placement="community_post" />
+            </div>
           </div>
         </div>
       </div>

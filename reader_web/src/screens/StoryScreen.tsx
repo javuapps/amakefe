@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import {
   canonicalPath,
@@ -11,6 +11,8 @@ import {
 import { StoryReading } from '@amakefe/ui'
 import portrait from '@amakefe/core/brand/portrait.webp'
 import { Async, Pill } from '../components/primitives'
+import { CommentsSheet } from '../components/CommentsSheet'
+import { SupportAsk } from '../components/SupportAsk'
 import { db } from '../db'
 import { useSignInPrompt } from '../hooks/useSignInPrompt'
 import {
@@ -70,6 +72,7 @@ function StoryBody({
   const toggleReaction = useToggleReaction(slug)
   const related = useRelated(story.card)
   const signIn = useSignInPrompt()
+  const [readingComments, setReadingComments] = useState(false)
 
   const saved = savedIds.data?.has(story.card.id) ?? false
   const part = story.parts[partNumber - 1]
@@ -98,6 +101,7 @@ function StoryBody({
       // Private windows and blocked site data throw here; count it and move on.
       void recordStoryView(db, story.card.id, partNumber)
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [story.card.id, partNumber, partCount])
 
@@ -213,6 +217,29 @@ function StoryBody({
           <span className="text-accent">♥</span>
           {formatCount(story.card.likeCount)}
         </button>
+        {/* Reading needs no account, so this one never asks for one — the
+            thread is public and the sheet asks only when somebody writes. */}
+        <button
+          type="button"
+          onClick={() => setReadingComments(true)}
+          className="flex items-center gap-2 text-sm text-body"
+        >
+          <svg
+            width="17"
+            height="17"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.4 8.4 0 0 1-3.8-.9L3 20.5l1.6-4.8A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z" />
+          </svg>
+          {formatCount(story.card.commentCount)}
+          <span className="sr-only">comments</span>
+        </button>
         <button
           type="button"
           onClick={() =>
@@ -268,7 +295,24 @@ function StoryBody({
         </section>
       )}
 
+      {/* Last, and after every way onward — the part nav above it and the
+          related stories above that. An ask a reader has to scroll past to
+          carry on reading is an ask in the way.
+          
+          It is shown every time rather than once a session. That limit was
+          written when this sat in the reading flow at the end of a part, where
+          repeating it through a six-part series would be pestering someone who
+          is reading. In a rail it is furniture, not an interruption, and a
+          sidebar that carries it on one story and not the next reads as a bug
+          — which is how it was reported. */}
+      <div className="px-[22px] pt-6 pb-8 lg:px-0 lg:pt-0 lg:pb-0">
+        <SupportAsk placement="story_end" />
+      </div>
       </aside>
+
+      {readingComments && (
+        <CommentsSheet story={story.card} onClose={() => setReadingComments(false)} />
+      )}
 
       {signIn.node}
     </article>
@@ -281,3 +325,4 @@ const resolveImage = (path: string): string | null =>
 const coverUrl = (path: string | null): string | null => (path ? resolveImage(path) : null)
 
 const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
+

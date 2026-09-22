@@ -22,7 +22,15 @@ export type StoryCard = {
   storyType: StoryType
   publishedAt: Date
   likeCount: number
+  commentCount: number
+  /** The story's own cover, as the studio set it. */
   coverImagePath: string | null
+  /**
+   * What to show for this story anywhere there is no part in front of you —
+   * the cover, else the first published part's picture. Null when the story
+   * has no image at all, which is when the lettered tile earns its place.
+   */
+  coverPath: string | null
   /** Parts published so far. */
   partCount: number
   /** Parts the series will run to, once the creator has announced a length. */
@@ -41,6 +49,8 @@ export function toStoryCard(row: StoryCardRow): StoryCard {
     storyType: row.story_type!,
     publishedAt: new Date(row.published_at!),
     likeCount: row.like_count ?? 0,
+    commentCount: row.comment_count ?? 0,
+    coverPath: row.cover_path,
     coverImagePath: row.cover_image_path,
     partCount: row.part_count ?? 0,
     totalPartCount: row.total_part_count ?? 0,

@@ -48,6 +48,14 @@
 
   --radius-card: 14px;
   --radius-tile: 10px;
+
+  /* One curve for everything that arrives.
+   *
+   * Weighted to decelerate: it leaves quickly and settles slowly, which is what
+   * makes a panel feel attached to the edge it came from rather than thrown at
+   * it. Used by the drawers, the modals and the page transition alike, so the
+   * whole product moves in one accent instead of four. */
+  --ease-settle: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
@@ -225,10 +233,114 @@ textarea.auto-grow {
   animation: drawer-scrim-in 180ms ease-out;
 }
 .drawer-panel {
-  animation: drawer-panel-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  animation: drawer-panel-in 280ms var(--ease-settle);
   /* Its own layer for the duration, so the text inside does not re-rasterise
      on every frame of the slide. */
   will-change: transform;
+}
+
+/* Motion.
+ *
+ * The design is a printed page, so nothing here bounces, spins or slides very
+ * far. What the motion is for is continuity: saying that this screen replaced
+ * that one, that this panel came from the edge, that the thing you tapped is
+ * what opened. A few pixels of travel and a fade do all of that, and anything
+ * more starts to cost the reader time on every single navigation.
+ *
+ * Everything below is dropped or damped under `prefers-reduced-motion` at the
+ * bottom of this file. */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A page arriving. It rises a little, because that reads as "the next thing"
+ * rather than as a cross-fade between two unrelated screens. Deliberately
+ * short — this runs on every navigation and a reader feels 400ms of it. */
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A modal arriving. It comes up from slightly below and slightly small, so it
+ * reads as growing out of the thing that was tapped. */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-enter {
+  animation: page-in 220ms var(--ease-settle);
+}
+
+.modal-scrim {
+  animation: fade-in 160ms ease-out;
+}
+
+.modal-panel {
+  animation: modal-in 240ms var(--ease-settle);
+  /* No `will-change: transform` here, unlike the drawer. A transform — even a
+     promised one — makes an element the containing block for every
+     `position: fixed` descendant, and the full-screen modals contain plenty:
+     the part studio opens drawers and confirm dialogs from inside itself. The
+     animation's own transform does the same thing, but only for 240ms and only
+     while the panel already covers the viewport, so nothing can be seen to
+     move. A permanent one would outlive the animation for no gain. */
+}
+
+/* Every button and link gives under the finger.
+ *
+ * A base rule rather than a utility per control, for the same reason
+ * `cursor: pointer` is one: the next button added would not have it either.
+ * It is deliberately tiny — 2% for a moment — because this is confirmation
+ * that the tap registered, not an effect. `:active` only fires on a real
+ * press, so nothing moves while merely reading. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+a {
+  transition: transform 120ms var(--ease-settle);
+}
+button:not(:disabled):active,
+[role='button']:not([aria-disabled='true']):active,
+a:active {
+  transform: scale(0.98);
+}
+
+/* A panel that is a drawer on a desk and a modal in a hand.
+ *
+ * The story's comments are the same content either way, but not the same kind
+ * of thing: on a monitor they arrive beside the story you are still reading,
+ * and on a phone they are the screen you moved to, because there is no beside.
+ * One class, so no component has to know which it is — only where to put it.
+ *
+ * `lg` is 64rem, matching the reader's breakpoint. Written as a media query
+ * rather than two classes because both set `animation`, and two classes of
+ * equal specificity are resolved by the order of this file, not the order they
+ * are written in the markup — which is a coin toss nobody should have to win. */
+.sheet-panel {
+  animation: modal-in 240ms var(--ease-settle);
+}
+@media (min-width: 64rem) {
+  .sheet-panel {
+    animation: drawer-panel-in 280ms var(--ease-settle);
+  }
 }
 
 /* The one spinner in the product, and it is not a loading indicator.
@@ -248,11 +360,23 @@ textarea.auto-grow {
   animation: spin 900ms linear infinite;
 }
 
-/* Someone who has asked for less motion gets the panel, not the journey. */
+/* Someone who has asked for less motion gets the panel, not the journey.
+ *
+ * The scrims keep their fade: a fade is an opacity change, not movement, and it
+ * is what stops the page behind flinching when a modal opens. Only the things
+ * that travel are dropped. */
 @media (prefers-reduced-motion: reduce) {
   .drawer-scrim,
-  .drawer-panel {
+  .drawer-panel,
+  .page-enter,
+  .modal-panel,
+  .sheet-panel {
     animation: none;
+  }
+  button:active,
+  [role='button']:active,
+  a:active {
+    transform: none;
   }
   /* The spinner slows rather than stopping. Stopped, it is indistinguishable
      from a payment that has hung, which is the one thing it exists to rule

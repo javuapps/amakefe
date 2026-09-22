@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { canonicalPath, isSeries, resumePoint, type StoryCard } from '@amakefe/core'
+import { SUPPORT_AMOUNTS, canonicalPath, isSeries, resumePoint, type StoryCard } from '@amakefe/core'
 import { Async, Pill, SectionLabel } from '../components/primitives'
 import { StoryRow } from '../components/StoryRow'
 import { Mark } from '../components/Mark'
@@ -145,15 +145,23 @@ function LatestFromCommunity() {
 function SupportCard() {
   return (
     <section className="px-5 pt-4 lg:px-0">
-      <Link to="/support" className="block rounded-card bg-accent p-[18px] text-[#fff6ea] lg:p-6">
+      {/* `?from=` is how the asks that link rather than open the sheet still
+          get the credit for what someone gives once they arrive. */}
+      <Link
+        to="/support?from=home_card"
+        className="block rounded-card bg-accent p-[18px] text-[#fff6ea] lg:p-6"
+      >
         <h3 className="font-display text-[19px]">Support the Community</h3>
         <p className="mt-2 text-[13px] leading-relaxed text-[#ffebd8]">
           If these stories have helped you, you can support the work behind them.
         </p>
         <div className="mt-3 flex gap-2">
-          {['ZMW 10', 'ZMW 25', 'ZMW 50'].map((amount) => (
-            <span key={amount} className="rounded-full bg-white/18 px-[14px] py-[7px] text-[13px] font-semibold">
-              {amount}
+          {SUPPORT_AMOUNTS.slice(0, 3).map((amount) => (
+            <span
+              key={amount}
+              className="rounded-full bg-white/18 px-[14px] py-[7px] text-[13px] font-semibold"
+            >
+              ZMW {amount}
             </span>
           ))}
         </div>

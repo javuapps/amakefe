@@ -50,13 +50,13 @@ export function SettlementStatement({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex justify-center bg-ink/50"
+      className="modal-scrim fixed inset-0 z-50 flex justify-center bg-ink/50"
       role="dialog"
       aria-modal="true"
       aria-label={`Settlement ${settlement.reference}`}
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
-      <div className="flex h-full w-full flex-col bg-surface">
+      <div className="modal-panel flex h-full w-full flex-col bg-surface">
         <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line px-8 py-[18px]">
           <div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-muted">
