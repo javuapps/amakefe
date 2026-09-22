@@ -239,7 +239,7 @@ function Line({ label, value }: { label: string; value: number }) {
 }
 
 const selectClass =
-  'rounded-lg border border-line-card bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-line-strong'
+  'min-w-0 flex-1 rounded-lg border border-line-card bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-line-strong sm:flex-none'
 
 const STATUS_LABELS: Record<StoryStatus, string> = {
   draft: 'Draft',
@@ -275,7 +275,7 @@ function SearchField({ value, onChange }: { value: string; onChange: (value: str
       value={draft}
       onChange={(event) => setDraft(event.target.value)}
       placeholder="Search titles and summaries"
-      className="min-w-0 flex-1 rounded-lg border border-line-card bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-line-strong sm:max-w-xs"
+      className="w-full min-w-0 rounded-lg border border-line-card bg-surface px-3 py-2 text-xs text-ink outline-none focus:border-line-strong sm:w-auto sm:max-w-xs sm:flex-1"
     />
   )
 }
@@ -345,7 +345,7 @@ function StoryRow({ story }: { story: StudioStoryRow }) {
     // story from here, and that is open it.
     <Link
       to={`/stories/${story.id}`}
-      className="group flex items-start gap-6 border-t border-line-soft py-6 first:border-0 first:pt-0 last:pb-0"
+      className="group flex items-start gap-4 border-t border-line-soft py-5 first:border-0 first:pt-0 last:pb-0 sm:gap-6 sm:py-6"
     >
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="text-xs text-muted">
@@ -353,7 +353,7 @@ function StoryRow({ story }: { story: StudioStoryRow }) {
           {story.firstPublishedAt && ` · ${formatDate(story.firstPublishedAt)}`}
         </p>
 
-        <h2 className="mt-2 font-display text-[21px] leading-snug text-ink group-hover:text-accent-deep">
+        <h2 className="mt-2 font-display text-[18px] leading-snug text-ink group-hover:text-accent-deep sm:text-[21px]">
           {story.title}
         </h2>
 
@@ -395,11 +395,11 @@ function StoryRow({ story }: { story: StudioStoryRow }) {
       {/* The cover if there is one, the prototype's lettered tile if not — the
           same fallback the reader uses, so a story looks like itself in both. */}
       {cover ? (
-        <img src={cover} alt="" className="aspect-[3/2] w-[132px] shrink-0 rounded-lg object-cover" />
+        <img src={cover} alt="" className="aspect-[3/2] w-[84px] shrink-0 rounded-lg object-cover sm:w-[132px]" />
       ) : (
         <div
           aria-hidden
-          className="flex aspect-[3/2] w-[132px] shrink-0 items-center justify-center rounded-lg bg-surface-warm font-display text-[28px] text-line-strong"
+          className="flex aspect-[3/2] w-[84px] shrink-0 items-center justify-center rounded-lg bg-surface-warm font-display text-[20px] text-line-strong sm:w-[132px] sm:text-[28px]"
         >
           {storyInitial(story)}
         </div>

@@ -46,7 +46,14 @@ export function ScheduleScreen() {
                 </div>
               }
             >
-              <div className="grid grid-cols-7 gap-2">
+              {/*
+                * Seven columns is a week on a desk. On a phone it gives each
+                * day 46px, which truncated every chip to "Par 1 T.. 22:" — a
+                * calendar that cannot say what is on it. The same cells stack
+                * into a day-by-day list below `lg`, each day a row with its
+                * entries beside the date, so nothing has to be rendered twice.
+                */}
+              <div className="grid grid-cols-1 gap-2 lg:grid-cols-7">
                 {days.map((day) => {
                   const onDay = parts.filter(
                     ({ part }) => part.publishedAt && sameDay(part.publishedAt, day),
@@ -55,14 +62,14 @@ export function ScheduleScreen() {
                   return (
                     <div
                       key={day.toISOString()}
-                      className={`flex min-h-28 flex-col rounded-lg border p-2 ${
+                      className={`flex gap-3 rounded-lg border p-2 lg:min-h-28 lg:flex-col lg:gap-0 ${
                         isToday ? 'border-accent bg-accent-wash/40' : 'border-line-soft bg-surface'
                       }`}
                     >
-                      <div className="text-[11px] text-muted">
+                      <div className="w-16 shrink-0 text-[11px] text-muted lg:w-auto">
                         {day.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' })}
                       </div>
-                      <div className="mt-2 flex flex-col gap-1">
+                      <div className="flex min-w-0 flex-1 flex-col gap-1 lg:mt-2 lg:flex-none">
                         {onDay.map(({ story, part }) => (
                           <DayEntry key={part.id} story={story} part={part} />
                         ))}
@@ -145,16 +152,21 @@ function DayEntry({ story, part }: { story: StudioStorySummary; part: StudioPart
   return (
     <Link
       to={`/stories/${story.id}/parts/${part.id}`}
-      className={`rounded p-1.5 text-[11px] leading-tight transition-opacity hover:opacity-80 ${
+      // One line on a phone with the title taking what is left; three stacked
+      // lines in a 46px-wide column on a desk, where there is no room for a
+      // line and the day already says the date.
+      className={`flex min-w-0 items-baseline gap-x-2 rounded p-1.5 text-[11px] leading-tight transition-opacity hover:opacity-80 lg:block ${
         live ? 'bg-ink text-surface-warm' : 'border border-gold bg-surface-warm text-body'
       }`}
     >
-      <div className="font-semibold">Part {part.partNumber}</div>
-      <div className="truncate opacity-80">{story.title}</div>
-      <div className="opacity-70">
+      <span className="shrink-0 font-semibold">Part {part.partNumber}</span>
+      <span className="min-w-0 flex-1 truncate opacity-80 lg:block lg:flex-none">
+        {story.title}
+      </span>
+      <span className="shrink-0 opacity-70 lg:block">
         {part.publishedAt!.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
         {!live && ' · queued'}
-      </div>
+      </span>
     </Link>
   )
 }

@@ -77,7 +77,7 @@ export function SettlementStatement({
         {/* One scroll region, as everywhere else in the studio. */}
         <div className="min-h-0 flex-1 overflow-y-auto px-8 py-7">
           <div className="mx-auto flex max-w-3xl flex-col gap-7">
-            <section className="grid grid-cols-2 gap-x-10 gap-y-5">
+            <section className="grid gap-x-10 gap-y-5 sm:grid-cols-2">
               <Facts
                 title="This settlement"
                 rows={[
@@ -125,34 +125,42 @@ export function SettlementStatement({
               {payments === null ? (
                 <div className="h-24 animate-pulse rounded-card bg-surface-tint" />
               ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-line text-left text-xs text-muted">
-                      <th className="pb-2 font-normal">Cleared</th>
-                      <th className="pb-2 font-normal">Reference</th>
-                      <th className="pb-2 font-normal">Network</th>
-                      <th className="pb-2 text-right font-normal">Given</th>
-                      <th className="pb-2 text-right font-normal">Commission</th>
-                      <th className="pb-2 text-right font-normal">{netLabel}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                <div>
+                  <div className="hidden border-b border-line pb-2 text-xs text-muted lg:grid lg:grid-cols-[minmax(0,1fr)_repeat(3,96px)] lg:gap-3">
+                    <span>Cleared · reference · network</span>
+                    <span className="text-right">Given</span>
+                    <span className="text-right">Commission</span>
+                    <span className="text-right">{netLabel}</span>
+                  </div>
+                  <ul>
                     {payments.map((row) => (
-                      <tr key={row.id} className="border-b border-line-soft last:border-0">
-                        <td className="py-2.5 whitespace-nowrap">
-                          {row.completedAt ? formatDate(row.completedAt) : '—'}
-                        </td>
-                        <td className="text-muted">{row.reference}</td>
-                        <td>{row.operator ? networkName(row.operator) : row.provider}</td>
-                        <td className="text-right tabular-nums">{formatKwacha(row.amountMinor)}</td>
-                        <td className="text-right tabular-nums text-muted">
-                          {formatKwacha(row.commissionMinor)}
-                        </td>
-                        <td className="text-right tabular-nums">{formatKwacha(row.netMinor)}</td>
-                      </tr>
+                      <li
+                        key={row.id}
+                        className="grid gap-x-3 gap-y-1 border-b border-line-soft py-3 last:border-0 lg:grid-cols-[minmax(0,1fr)_repeat(3,96px)] lg:items-baseline"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-sm text-ink">
+                            {row.completedAt ? formatDate(row.completedAt) : '—'} ·{' '}
+                            {row.operator ? networkName(row.operator) : row.provider}
+                          </div>
+                          <div className="truncate text-xs text-muted">{row.reference}</div>
+                        </div>
+                        {/* Three labelled figures wrapping under the payment on
+                            a phone; three columns on a desk, where the header
+                            above names them. */}
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 lg:contents">
+                          <Figure label="Given" value={formatKwacha(row.amountMinor)} />
+                          <Figure
+                            label="Commission"
+                            value={formatKwacha(row.commissionMinor)}
+                            muted
+                          />
+                          <Figure label={netLabel} value={formatKwacha(row.netMinor)} />
+                        </div>
+                      </li>
                     ))}
-                  </tbody>
-                </table>
+                  </ul>
+                </div>
               )}
             </section>
 
@@ -164,6 +172,20 @@ export function SettlementStatement({
         </div>
       </div>
     </div>
+  )
+}
+
+/**
+ * One figure from a payment. Its label shows on a phone, where nothing else
+ * says what the number is, and is hidden from `lg`, where the column header
+ * does — the same arrangement as the dashboard's performance list.
+ */
+function Figure({ label, value, muted = false }: { label: string; value: string; muted?: boolean }) {
+  return (
+    <span className="text-sm lg:text-right">
+      <span className="text-xs text-muted lg:hidden">{label} </span>
+      <span className={`tabular-nums ${muted ? 'text-muted' : 'text-ink'}`}>{value}</span>
+    </span>
   )
 }
 

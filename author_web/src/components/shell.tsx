@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { createContext, use, useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Appear } from '@amakefe/ui'
@@ -47,9 +48,26 @@ export function Shell() {
   )
 }
 
+/**
+ * Where a screen puts the actions that belong to the whole page.
+ *
+ * A portal rather than state passed upward: the buttons stay in the screen's
+ * own tree, so they keep the handlers and the state they already had, and
+ * nothing has to be published to a parent on every render. The slot is held in
+ * state rather than a ref because a ref does not re-render the consumers when
+ * it is filled, and they would portal into nothing on the first pass.
+ */
+const AppBarSlot = createContext<HTMLElement | null>(null)
+
+export function AppBarActions({ children }: { children: ReactNode }) {
+  const slot = use(AppBarSlot)
+  return slot ? createPortal(children, slot) : null
+}
+
 function ShellFrame() {
   const { pathname } = useLocation()
   const [navOpen, setNavOpen] = useState(false)
+  const [appBarSlot, setAppBarSlot] = useState<HTMLElement | null>(null)
 
   // A tap on a destination should close the drawer it was tapped in. Keyed on
   // the path rather than wired to every link, so a navigation from anywhere —
@@ -139,13 +157,18 @@ function ShellFrame() {
             </h1>
             <p className="mt-[3px] hidden text-[13px] text-muted sm:block">{subtitle}</p>
           </div>
+          {/* The page's own actions land here. `ml-auto` keeps them right
+              even when the email beside them is hidden. */}
+          <div ref={setAppBarSlot} className="ml-auto flex shrink-0 items-center gap-2" />
           <p className="hidden text-xs text-muted lg:block">{email}</p>
         </header>
 
         <main className="min-h-0 min-w-0 flex-1 overflow-y-auto p-5 lg:p-8">
+          <AppBarSlot value={appBarSlot}>
           <Appear trigger={pathname}>
             <Outlet />
           </Appear>
+          </AppBarSlot>
         </main>
       </div>
     </div>

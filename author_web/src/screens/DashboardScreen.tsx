@@ -50,42 +50,70 @@ export function DashboardScreen() {
             rows.length === 0 ? (
               <p className="text-sm text-muted">No published stories yet.</p>
             ) : (
-              <div className="-mx-1 overflow-x-auto px-1">
-              <table className="w-full min-w-[520px] text-sm">
-                <thead>
-                  <tr className="border-b border-line text-left text-xs text-muted">
-                    <th className="pb-2 font-normal">Story</th>
-                    <th className="pb-2 text-right font-normal">Readers</th>
-                    <th className="pb-2 text-right font-normal">Completion</th>
-                    <th className="pb-2 text-right font-normal">Comments</th>
-                    <th className="pb-2 text-right font-normal">Saves</th>
-                    <th className="pb-2 text-right font-normal">Likes</th>
-                  </tr>
-                </thead>
-                <tbody>
+              /*
+               * Not a table.
+               *
+               * Six numeric columns beside a story title is a desk layout, and
+               * at 402px it was either squashed or scrolling sideways with its
+               * header sliced mid-word. One grid does both instead: the figures
+               * wrap under the title on a phone, each carrying its own label,
+               * and line up in columns from `lg`, where the header row above
+               * supplies the labels and each figure hides its own.
+               */
+              <div>
+                <div className="hidden border-b border-line pb-2 text-xs text-muted lg:grid lg:grid-cols-[minmax(0,1fr)_repeat(5,80px)] lg:gap-3">
+                  <span>Story</span>
+                  {['Readers', 'Completion', 'Comments', 'Saves', 'Likes'].map((head) => (
+                    <span key={head} className="text-right">
+                      {head}
+                    </span>
+                  ))}
+                </div>
+                <ul>
                   {rows.map((row) => (
-                    <tr key={row.storyId} className="border-b border-line-soft last:border-0">
-                      <td className="py-3">
+                    <li
+                      key={row.storyId}
+                      className="grid gap-x-3 gap-y-2 border-b border-line-soft py-3 last:border-0 lg:grid-cols-[minmax(0,1fr)_repeat(5,80px)] lg:items-center"
+                    >
+                      <div className="min-w-0">
                         <div className="font-display text-[15px] text-ink">{row.title}</div>
                         <div className="text-xs text-muted">
-                          {row.categoryName} · {row.partCount} {row.partCount === 1 ? 'part' : 'parts'}
+                          {row.categoryName} · {row.partCount}{' '}
+                          {row.partCount === 1 ? 'part' : 'parts'}
                         </div>
-                      </td>
-                      <td className="text-right tabular-nums">{formatCount(row.readers)}</td>
-                      <td className="text-right tabular-nums">{row.completion}%</td>
-                      <td className="text-right tabular-nums">{formatCount(row.comments)}</td>
-                      <td className="text-right tabular-nums">{formatCount(row.saves)}</td>
-                      <td className="text-right tabular-nums">{formatCount(row.likes)}</td>
-                    </tr>
+                      </div>
+                      {/* Wraps as a row of labelled figures on a phone; becomes
+                          the five columns on a desk. */}
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 lg:contents">
+                        <Figure label="Readers" value={formatCount(row.readers)} />
+                        <Figure label="Completion" value={`${row.completion}%`} />
+                        <Figure label="Comments" value={formatCount(row.comments)} />
+                        <Figure label="Saves" value={formatCount(row.saves)} />
+                        <Figure label="Likes" value={formatCount(row.likes)} />
+                      </div>
+                    </li>
                   ))}
-                </tbody>
-              </table>
+                </ul>
               </div>
             )
           }
         </Async>
       </Panel>
     </div>
+  )
+}
+
+/**
+ * One number from the performance list. Its label is shown on a phone, where
+ * nothing else says what the figure is, and hidden from `lg`, where the column
+ * header does.
+ */
+function Figure({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="text-sm lg:text-right lg:tabular-nums">
+      <span className="text-xs text-muted lg:hidden">{label} </span>
+      <span className="tabular-nums text-ink">{value}</span>
+    </span>
   )
 }
 
@@ -121,7 +149,7 @@ function SeriesRetention() {
           onChange={(event) => setSelected(event.target.value)}
           // A select is as wide as its widest option unless told otherwise,
           // and these options are story titles.
-          className="max-w-full rounded-lg border border-line-card bg-surface px-3 py-1.5 text-sm text-ink"
+          className="w-full max-w-full rounded-lg border border-line-card bg-surface px-3 py-1.5 text-sm text-ink sm:w-auto"
         >
           {series.map((story) => (
             <option key={story.id} value={story.id}>

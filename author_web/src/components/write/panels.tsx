@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   canonicalPath,
   hasBlockingFinding,
@@ -483,6 +483,55 @@ export function AnonymisePanel({ story, part }: { story: StudioStory; part: Stud
   )
 }
 
+/**
+ * The frame's full width. The bezel is not added to it: preflight sets
+ * `box-sizing: border-box`, so the 6px border lives inside the 402px rather
+ * than around it. Adding it made the handset 10px narrower than its column.
+ */
+const FRAME_WIDTH = 402
+
+/**
+ * How much of the handset fits in the space available.
+ *
+ * The frame is 402px because that is the width the reader is designed at, and
+ * that is the whole value of it: the line breaks in here are the line breaks a
+ * reader gets. So when the column is narrower — the studio on a phone, where
+ * the panel offers about 322px — it is scaled rather than narrowed. A frame
+ * that shrank to fit would still show a phone, just not the reader's phone.
+ *
+ * The holder takes the scaled height, because `transform` does not change how
+ * much room an element takes and the panel below it would otherwise overlap.
+ */
+function useFitToWidth() {
+  const holder = useRef<HTMLDivElement>(null)
+  const frame = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+  const [height, setHeight] = useState<number | undefined>(undefined)
+
+  useEffect(() => {
+    const holderEl = holder.current
+    const frameEl = frame.current
+    if (!holderEl || !frameEl) return
+
+    const measure = () => {
+      const next = Math.min(1, holderEl.clientWidth / FRAME_WIDTH)
+      setScale(next)
+      setHeight(frameEl.offsetHeight * next)
+    }
+    measure()
+
+    const observer = new ResizeObserver(measure)
+    observer.observe(holderEl)
+    // The frame's own height moves with the viewport — it is capped against
+    // `100dvh` — so watching only the holder would leave the reserved space
+    // wrong after a rotation.
+    observer.observe(frameEl)
+    return () => observer.disconnect()
+  }, [])
+
+  return { holder, frame, scale, height }
+}
+
 /** A phone-width preview using the very component the reader renders with. */
 export function ReaderPreview({
   story,
@@ -500,6 +549,7 @@ export function ReaderPreview({
   // Redacted here exactly as the database redacts it on the way out, so the
   // frame shows what a reader gets rather than what she typed.
   const terms = part.anonymiseTerms
+  const fit = useFitToWidth()
 
   return (
     <div>
@@ -512,7 +562,12 @@ export function ReaderPreview({
           showed the whole thing at once, which is the one thing a reader never
           sees. Capped against the viewport so the handset always fits on screen
           whatever the laptop. */}
-      <div className="w-[402px] overflow-hidden rounded-[28px] border-[6px] border-ink bg-surface">
+      <div ref={fit.holder} style={{ height: fit.height }} className="overflow-hidden">
+      <div
+        ref={fit.frame}
+        style={{ transform: `scale(${fit.scale})`, transformOrigin: 'top left' }}
+        className="w-[402px] overflow-hidden rounded-[28px] border-[6px] border-ink bg-surface"
+      >
         <div className="phone-screen h-[min(874px,calc(100dvh-17rem))] min-h-[420px]">
           <StoryReading
             title={story.title}
@@ -530,6 +585,7 @@ export function ReaderPreview({
             markUrl={portrait}
           />
         </div>
+      </div>
       </div>
     </div>
   )

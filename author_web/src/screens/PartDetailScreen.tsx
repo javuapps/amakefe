@@ -15,7 +15,7 @@ import {
   type StudioPart,
   type StudioStory,
 } from '@amakefe/core'
-import { Async, BackLink, Panel } from '../components/shell'
+import { AppBarActions, Async, BackLink, Panel } from '../components/shell'
 import { useConfirm } from '../components/ConfirmDialog'
 import { Menu } from '../components/Menu'
 import { Tabs } from '../components/Tabs'
@@ -161,11 +161,15 @@ function Part({
           </p>
         </div>
 
-        <div className="flex shrink-0 items-center gap-3">
+        {/* In the app bar, not the page: these act on the whole part, and on
+            a phone they were a row of their own between the heading and the
+            work. The portal keeps them in this component's tree, so they still
+            close over `part` and `story` without anything being passed up. */}
+        <AppBarActions>
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-full bg-ink px-5 py-2 text-xs font-semibold text-surface-warm"
+            className="rounded-full bg-ink px-4 py-1.5 text-xs font-semibold text-surface-warm lg:px-5 lg:py-2"
           >
             {part.wordCount > 0 ? 'Edit' : 'Write'}
           </button>
@@ -205,7 +209,7 @@ function Part({
               },
             ]}
           />
-        </div>
+        </AppBarActions>
       </div>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
