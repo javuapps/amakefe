@@ -136,12 +136,16 @@ const router = createBrowserRouter([
       },
       // §75's shapes: a single-part story lives at /stories/<slug>; each part of
       // a series gets its own address so it can be shared and indexed alone.
+      //
+      // The part segment is captured whole and read by `partFromSegment`, not
+      // matched as `part-:part` — a React Router dynamic segment cannot be
+      // partial, so that pattern matched nothing and every series part 404'd.
       {
         path: '/stories/:slug',
         lazy: async () => ({ Component: (await import('./screens/StoryScreen')).StoryScreen }),
       },
       {
-        path: '/stories/:slug/part-:part',
+        path: '/stories/:slug/:part',
         lazy: async () => ({ Component: (await import('./screens/StoryScreen')).StoryScreen }),
       },
       {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   canonicalPath,
+  partFromSegment,
   docPlainText,
   docText,
   isEmptyDoc,
@@ -135,6 +136,21 @@ describe('canonical paths', () => {
 
   it('gives each part of a series its own address', () => {
     expect(canonicalPath('the-letter', { part: 3, isSeries: true })).toBe('/stories/the-letter/part-3')
+  })
+
+  // The router captures the part segment whole, so this is what turns it back
+  // into a number. It round-trips with canonicalPath or every series part 404s.
+  it('reads the part back out of the address it wrote', () => {
+    for (const part of [1, 2, 7, 12]) {
+      const path = canonicalPath('the-letter', { part, isSeries: true })
+      expect(partFromSegment(path.split('/').pop())).toBe(part)
+    }
+  })
+
+  it('answers null for anything that is not a part segment', () => {
+    for (const segment of [undefined, '', '3', 'part-', 'part-0', 'part-two', 'parts-2', 'part-2x']) {
+      expect(partFromSegment(segment)).toBeNull()
+    }
   })
 })
 

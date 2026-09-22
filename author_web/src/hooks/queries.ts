@@ -38,6 +38,7 @@ import {
   fetchSupportTransactions,
   saveEditorName,
   hideComment,
+  type CommentKind,
   keepComment,
   postPublicationNow,
   planPublication,
@@ -388,8 +389,16 @@ export function usePlanPublication(storyId: string) {
 export function useModerate() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: ({ commentId, action }: { commentId: string; action: 'hide' | 'keep' }) =>
-      action === 'hide' ? hideComment(db, commentId) : keepComment(db, commentId),
+    mutationFn: ({
+      kind,
+      commentId,
+      action,
+    }: {
+      kind: CommentKind
+      commentId: string
+      action: 'hide' | 'keep'
+    }) =>
+      action === 'hide' ? hideComment(db, kind, commentId) : keepComment(db, kind, commentId),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.moderation }),
   })
 }

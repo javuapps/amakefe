@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { formatCount, formatRelative, optionShare, type CommunityPost } from '@amakefe/core'
 import { Mark } from './Mark'
+import { ReportButton } from './ReportButton'
 import { SectionLabel } from './primitives'
 import { SupportAsk } from './SupportAsk'
 import {
@@ -233,6 +234,9 @@ function Comments({ postId }: { postId: string }) {
             {comment.authorName ?? 'Someone'} · {formatRelative(comment.createdAt)}
           </div>
           <p className="prose-story text-[14.5px]">{comment.body}</p>
+          <div className="mt-0.5">
+            <ReportButton kind="post_comment" commentId={comment.id} />
+          </div>
         </div>
       ))}
 

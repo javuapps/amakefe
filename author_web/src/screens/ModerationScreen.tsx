@@ -34,7 +34,12 @@ export function ModerationScreen() {
                       <div>
                         <div className="text-[13px] font-semibold text-ink">{item.authorName}</div>
                         <div className="text-[11px] text-muted">
-                          on {item.storyTitle} · {formatRelative(item.createdAt)}
+                          {/* Which kind it is, because "hide" means a different
+                              table for each and a moderator should know what
+                              they are looking at. */}
+                          {item.kind === 'story_comment' ? 'on the story' : 'under the post'}{' '}
+                          <span className="text-body">{item.context}</span> ·{' '}
+                          {formatRelative(item.createdAt)}
                         </div>
                       </div>
                     </div>
@@ -49,7 +54,7 @@ export function ModerationScreen() {
                     <button
                       type="button"
                       disabled={moderate.isPending}
-                      onClick={() => moderate.mutate({ commentId: item.id, action: 'keep' })}
+                      onClick={() => moderate.mutate({ kind: item.kind, commentId: item.id, action: 'keep' })}
                       className="rounded-full border border-line-strong px-4 py-1.5 text-xs text-body"
                     >
                       Keep
@@ -57,7 +62,7 @@ export function ModerationScreen() {
                     <button
                       type="button"
                       disabled={moderate.isPending}
-                      onClick={() => moderate.mutate({ commentId: item.id, action: 'hide' })}
+                      onClick={() => moderate.mutate({ kind: item.kind, commentId: item.id, action: 'hide' })}
                       className="rounded-full bg-ink px-4 py-1.5 text-xs font-semibold text-surface-warm"
                     >
                       Hide

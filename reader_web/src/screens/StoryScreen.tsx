@@ -4,6 +4,7 @@ import {
   canonicalPath,
   formatCount,
   isSeries,
+  partFromSegment,
   recordStoryView,
   storyMeta,
   type Story,
@@ -36,7 +37,7 @@ import {
 export function StoryScreen() {
   const { slug = '', part } = useParams()
   const story = useStory(slug)
-  const requested = Number(part) || 1
+  const requested = partFromSegment(part) ?? 1
 
   return (
     <Async

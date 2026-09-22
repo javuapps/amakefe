@@ -155,6 +155,27 @@ export function canonicalPath(slug: string, options: { part?: number; isSeries?:
   return `/stories/${slug}/part-${part}`
 }
 
+/**
+ * The inverse of `canonicalPath`, for the router.
+ *
+ * The part lives in the URL as `part-3`, not as a bare `3`, and a React Router
+ * route cannot pick the number out of it: a dynamic segment has to occupy a
+ * whole path segment, so `/stories/:slug/part-:part` matches nothing at all and
+ * every part of every series answered 404. The route captures the whole segment
+ * and this reads the number back out of it, which keeps §75's addresses and the
+ * one definition of them in the same file.
+ *
+ * Anything that is not `part-<n>` returns null and the caller falls back to the
+ * first part, the same way an out-of-range number is clamped rather than
+ * refused.
+ */
+export function partFromSegment(segment: string | undefined): number | null {
+  const match = /^part-(\d+)$/.exec(segment ?? '')
+  if (!match) return null
+  const part = Number(match[1])
+  return part >= 1 ? part : null
+}
+
 export const canonicalUrl = (
   siteUrl: string,
   slug: string,

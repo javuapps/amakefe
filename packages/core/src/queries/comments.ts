@@ -1,5 +1,5 @@
 import { currentReaderId, requireReaderId, type Db } from '../supabase'
-import type { Tables } from '../database.types'
+import type { Enums, Tables } from '../database.types'
 
 /**
  * Comments on a story.
@@ -107,4 +107,37 @@ export async function toggleCommentReaction(db: Db, commentId: string): Promise<
     .insert({ comment_id: commentId, user_id: userId })
   if (error) throw error
   return true
+}
+
+/** Which comment table a report is about. */
+export type CommentKind = Extract<Enums<'mod_target_kind'>, 'story_comment' | 'post_comment'>
+
+/**
+ * Reports a comment to the moderators.
+ *
+ * The one thing a reader can do about someone else's words, and until now
+ * there was no way to do it: `mod_reports` had an insert policy from the first
+ * schema and nothing ever called it, so the studio's queue only ever showed
+ * what a moderator happened to scroll past.
+ *
+ * A unique constraint on (kind, target, reporter) means reporting twice is not
+ * two reports. That comes back as a duplicate-key error, which the caller
+ * should treat as "already reported" rather than a failure — the reader's
+ * intent was satisfied either way.
+ */
+export async function reportComment(
+  db: Db,
+  kind: CommentKind,
+  commentId: string,
+  reason: string,
+): Promise<void> {
+  const userId = await requireReaderId(db)
+  const { error } = await db.from('mod_reports').insert({
+    target_kind: kind,
+    target_id: commentId,
+    reporter_id: userId,
+    reason: reason.trim(),
+  })
+  // 23505 is the unique violation: they have reported this one before.
+  if (error && error.code !== '23505') throw error
 }

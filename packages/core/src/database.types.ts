@@ -1452,6 +1452,19 @@ export type Database = {
           },
         ]
       }
+      mod_comment_queue: {
+        Row: {
+          author_name: string | null
+          body: string | null
+          context: string | null
+          created_at: string | null
+          id: string | null
+          report_count: number | null
+          status: Database["public"]["Enums"]["com_status"] | null
+          target_kind: Database["public"]["Enums"]["mod_target_kind"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       cnt_create_story: {
@@ -1596,6 +1609,20 @@ export type Database = {
         Args: { p_first_name: string; p_last_name: string }
         Returns: undefined
       }
+      mod_hide_comment: {
+        Args: {
+          p_id: string
+          p_kind: Database["public"]["Enums"]["mod_target_kind"]
+        }
+        Returns: undefined
+      }
+      mod_keep_comment: {
+        Args: {
+          p_id: string
+          p_kind: Database["public"]["Enums"]["mod_target_kind"]
+        }
+        Returns: undefined
+      }
       sec_is_editorial: { Args: never; Returns: boolean }
       sec_is_operator: { Args: never; Returns: boolean }
       sec_is_reader: { Args: never; Returns: boolean }
@@ -1679,7 +1706,7 @@ export type Database = {
       com_post_kind: "question" | "poll" | "notice"
       com_status: "visible" | "hidden"
       mod_report_status: "open" | "actioned" | "dismissed"
-      mod_target_kind: "comment" | "question" | "answer" | "story"
+      mod_target_kind: "story_comment" | "post_comment" | "story"
       sec_user_status: "active" | "suspended"
       sec_user_type: "reader" | "editorial" | "operator"
       sup_account_kind: "bank" | "mobile_money"
@@ -1834,7 +1861,7 @@ export const Constants = {
       com_post_kind: ["question", "poll", "notice"],
       com_status: ["visible", "hidden"],
       mod_report_status: ["open", "actioned", "dismissed"],
-      mod_target_kind: ["comment", "question", "answer", "story"],
+      mod_target_kind: ["story_comment", "post_comment", "story"],
       sec_user_status: ["active", "suspended"],
       sec_user_type: ["reader", "editorial", "operator"],
       sup_account_kind: ["bank", "mobile_money"],

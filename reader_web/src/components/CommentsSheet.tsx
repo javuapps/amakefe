@@ -8,6 +8,7 @@ import {
 } from '../hooks/queries'
 import { useSignInPrompt } from '../hooks/useSignInPrompt'
 import { Async } from './primitives'
+import { ReportButton } from './ReportButton'
 
 /**
  * What readers have said about a story.
@@ -105,6 +106,7 @@ export function CommentsSheet({ story, onClose }: { story: StoryCard; onClose: (
                         </span>
                       </div>
                       <p className="prose-story mt-1 text-[15px]">{comment.body}</p>
+                      <div className="mt-2 flex items-center gap-4">
                       <button
                         type="button"
                         onClick={() =>
@@ -116,13 +118,15 @@ export function CommentsSheet({ story, onClose }: { story: StoryCard; onClose: (
                           })
                         }
                         aria-pressed={reacted.data?.has(comment.id) ?? false}
-                        className={`mt-2 flex items-center gap-1.5 text-xs ${
+                        className={`flex items-center gap-1.5 text-xs ${
                           reacted.data?.has(comment.id) ? 'text-accent' : 'text-muted'
                         }`}
                       >
                         <span aria-hidden>♥</span>
                         {comment.likeCount > 0 ? formatCount(comment.likeCount) : 'Like'}
                       </button>
+                      <ReportButton kind="story_comment" commentId={comment.id} />
+                      </div>
                     </li>
                   ))}
                 </ul>

@@ -1,4 +1,5 @@
 import type { Db } from '../supabase'
+import type { CommentKind } from './comments'
 import type { Enums, Json, Tables } from '../database.types'
 import { emptyDoc, type ProseDoc } from '../models/prose'
 import { normaliseDocPaths } from './storage'
@@ -737,66 +738,76 @@ export async function planPublication(
 // ---------------------------------------------------------------------------
 
 export type ModerationItem = {
+  kind: CommentKind
   id: string
   body: string
   createdAt: Date
-  storyTitle: string
+  /** The story's title, or the opening of the post it sits under. */
+  context: string
   authorName: string
   reportCount: number
   reportReasons: string[]
 }
 
+/**
+ * Everything readers have written, both kinds at once, most reported first.
+ *
+ * It used to read `com_comments` alone — story comments, which had no reader
+ * UI — so the queue was empty while the comments people could actually leave,
+ * under a poll or a notice, were invisible to it. `mod_comment_queue` unions
+ * the two, which also lets the ordering be right: "most reported, then newest"
+ * cannot be done across two lists sorted separately.
+ */
 export async function fetchModerationQueue(db: Db): Promise<ModerationItem[]> {
-  const { data, error } = await db
-    .from('com_comments')
-    .select('id, body, created_at, status, cnt_stories(title), usr_profiles(display_name)')
-    .eq('status', 'visible')
-    .order('created_at', { ascending: false })
-    .limit(50)
+  const [{ data, error }, { data: reports, error: reportsError }] = await Promise.all([
+    db
+      .from('mod_comment_queue')
+      .select('*')
+      .eq('status', 'visible')
+      .order('created_at', { ascending: false })
+      .limit(100),
+    db.from('mod_reports').select('target_kind, target_id, reason').eq('status', 'open'),
+  ])
   if (error) throw error
-
-  const { data: reports, error: reportsError } = await db
-    .from('mod_reports')
-    .select('target_id, reason')
-    .eq('target_kind', 'comment')
-    .eq('status', 'open')
   if (reportsError) throw reportsError
 
+  // Keyed on both halves: the two tables have their own uuids and nothing says
+  // they cannot collide.
   const byTarget = new Map<string, string[]>()
   for (const report of reports) {
-    byTarget.set(report.target_id, [...(byTarget.get(report.target_id) ?? []), report.reason])
+    const key = `${report.target_kind}:${report.target_id}`
+    byTarget.set(key, [...(byTarget.get(key) ?? []), report.reason])
   }
 
   return data
-    .map((row) => ({
-      id: row.id,
-      body: row.body,
-      createdAt: new Date(row.created_at),
-      storyTitle: row.cnt_stories?.title ?? 'Unknown story',
-      authorName: row.usr_profiles?.display_name ?? 'Anonymous member',
-      reportCount: byTarget.get(row.id)?.length ?? 0,
-      reportReasons: byTarget.get(row.id) ?? [],
-    }))
+    .map((row) => {
+      const reasons = byTarget.get(`${row.target_kind}:${row.id}`) ?? []
+      return {
+        kind: row.target_kind as CommentKind,
+        id: row.id!,
+        body: row.body!,
+        createdAt: new Date(row.created_at!),
+        context: row.context ?? 'Unknown',
+        authorName: row.author_name ?? 'A reader',
+        reportCount: reasons.length,
+        reportReasons: reasons,
+      }
+    })
     .sort((a, b) => b.reportCount - a.reportCount || b.createdAt.getTime() - a.createdAt.getTime())
 }
 
-export async function hideComment(db: Db, commentId: string): Promise<void> {
-  const { error } = await db.from('com_comments').update({ status: 'hidden' }).eq('id', commentId)
+/**
+ * Hiding and keeping are one statement each now.
+ *
+ * They were two — update the comment, then update its reports — which is two
+ * chances to do half of a moderator's decision.
+ */
+export async function hideComment(db: Db, kind: CommentKind, commentId: string): Promise<void> {
+  const { error } = await db.rpc('mod_hide_comment', { p_kind: kind, p_id: commentId })
   if (error) throw error
-
-  const { error: reportError } = await db
-    .from('mod_reports')
-    .update({ status: 'actioned' })
-    .eq('target_kind', 'comment')
-    .eq('target_id', commentId)
-  if (reportError) throw reportError
 }
 
-export async function keepComment(db: Db, commentId: string): Promise<void> {
-  const { error } = await db
-    .from('mod_reports')
-    .update({ status: 'dismissed' })
-    .eq('target_kind', 'comment')
-    .eq('target_id', commentId)
+export async function keepComment(db: Db, kind: CommentKind, commentId: string): Promise<void> {
+  const { error } = await db.rpc('mod_keep_comment', { p_kind: kind, p_id: commentId })
   if (error) throw error
 }
