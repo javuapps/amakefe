@@ -14,28 +14,40 @@ export function HomeScreen() {
   const latest = useLatestStories()
 
   return (
-    <div className="flex flex-col pb-7">
+    // From `lg` the column is capped and centred: the prose below runs to a
+    // readable measure instead of the full width of a monitor.
+    <div className="flex flex-col pb-7 lg:mx-auto lg:w-full lg:max-w-[900px] lg:px-6 lg:pb-12">
       <Greeting />
 
-      <div className="px-5">
+      <div className="px-5 lg:px-0">
         <Async query={latest} loading={<div className="h-[196px] animate-pulse rounded-card bg-surface-tint" />}>
           {(stories) => (stories[0] ? <ReadingCard fallback={stories[0]} /> : null)}
         </Async>
       </div>
 
-      <div className="mt-[26px] flex items-baseline justify-between px-5">
+      <div className="mt-[26px] flex items-baseline justify-between px-5 lg:px-0">
         <h2 className="font-display text-[19px] text-ink">Latest stories</h2>
         <Link to="/stories" className="text-xs text-accent">
           See all
         </Link>
       </div>
 
-      <div className="px-5 pt-3">
+      {/* Two columns here and a single list on /stories, which is not an
+          inconsistency: Home shows a handful as a taste, where a pair of short
+          columns fills the width without becoming a wall. The Stories page is
+          the list you scroll, and two columns of it read as two separate
+          lists. */}
+      <div className="px-5 pt-3 lg:grid lg:grid-cols-2 lg:gap-x-10 lg:px-0">
         <Async query={latest}>
           {(stories) => (
             <>
-              {stories.slice(0, 3).map((story) => (
-                <StoryRow key={story.id} story={story} />
+              {stories.slice(0, 4).map((story, index) => (
+                // The prototype's Home lists three. The fourth exists only to
+                // square off the two desktop columns, so the phone never sees
+                // it.
+                <div key={story.id} className={index === 3 ? 'hidden lg:block' : undefined}>
+                  <StoryRow story={story} />
+                </div>
               ))}
             </>
           )}
@@ -54,8 +66,12 @@ function Greeting() {
   const timeOfDay = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <header className="flex items-center gap-[11px] px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-3">
-      <Mark size={38} />
+    <header className="flex items-center gap-[11px] px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-3 lg:px-0 lg:pt-7 lg:pb-5">
+      {/* The sidebar already carries the mark and the name on desktop; a second
+          set beside the greeting is the same thing said twice. */}
+      <span className="lg:hidden">
+        <Mark size={38} />
+      </span>
       <div>
         {/* Readers are anonymous, so there is no name to greet — the time of day
             stands on its own. */}
@@ -120,7 +136,7 @@ function LatestFromCommunity() {
   if (!post) return null
 
   return (
-    <section className="px-5 pt-6">
+    <section className="px-5 pt-6 lg:px-0 lg:pt-10">
       <PostCard post={post} />
     </section>
   )
@@ -128,8 +144,8 @@ function LatestFromCommunity() {
 
 function SupportCard() {
   return (
-    <section className="px-5 pt-4">
-      <Link to="/support" className="block rounded-card bg-accent p-[18px] text-[#fff6ea]">
+    <section className="px-5 pt-4 lg:px-0">
+      <Link to="/support" className="block rounded-card bg-accent p-[18px] text-[#fff6ea] lg:p-6">
         <h3 className="font-display text-[19px]">Support the Community</h3>
         <p className="mt-2 text-[13px] leading-relaxed text-[#ffebd8]">
           If these stories have helped you, you can support the work behind them.
@@ -146,10 +162,15 @@ function SupportCard() {
   )
 }
 
-/** The full-width button that closes Home in the prototype. */
+/**
+ * The full-width button that closes Home in the prototype.
+ *
+ * Hidden from `lg`, where the same call to action is a permanent button in the
+ * header — two of them on one screen is the app asking twice.
+ */
 function ShareCta() {
   return (
-    <div className="px-5 pt-[18px]">
+    <div className="px-5 pt-[18px] lg:hidden">
       <Link
         to="/share"
         className="block w-full rounded-full bg-ink py-[15px] text-center text-[15px] font-semibold text-surface-warm"

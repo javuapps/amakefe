@@ -17,7 +17,7 @@ export function ShareScreen() {
   const intro = 'Hello, I would like to share my story.'
 
   return (
-    <div className="min-h-dvh bg-ink px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-16">
+    <div className="min-h-dvh bg-ink px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-16 lg:px-[max(24px,calc((100%-620px)/2))] lg:pt-12">
       <Link to="/" className="text-sm text-[#c9b6a4]">
         ← Close
       </Link>

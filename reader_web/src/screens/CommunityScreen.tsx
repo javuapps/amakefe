@@ -25,7 +25,7 @@ export function CommunityScreen() {
   const mine = useMyQuestions()
 
   return (
-    <div className="flex flex-col px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-6">
+    <div className="flex flex-col px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-6 lg:mx-auto lg:w-full lg:max-w-[720px] lg:px-6 lg:pt-8 lg:pb-14">
       <h1 className="font-display text-[27px] text-ink">Community</h1>
       <p className="prose-story mt-3 text-[15px] text-body">
         Ask her anything about marriage, family or life. She reads every one and answers a few each

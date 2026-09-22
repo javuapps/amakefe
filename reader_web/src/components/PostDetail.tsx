@@ -34,10 +34,19 @@ export function PostDetail({ post, onClose }: { post: CommunityPost; onClose: ()
   }, [onClose])
 
   return (
+    /**
+     * Full screen at every width, which on desktop means the whole window
+     * rather than a phone-shaped strip down the middle of it. A 520px column
+     * floating in a 1440px page is a mobile modal that forgot where it was —
+     * and this is the screen you moved to, not a peek at one.
+     *
+     * The chrome spans the window; the reading does not. The body is capped to
+     * a measure inside it, the same way the settlement statement is.
+     */
     <div className="fixed inset-0 z-50 flex justify-center bg-ink/40" role="dialog" aria-modal="true">
-      <div className="flex h-full w-full max-w-[520px] flex-col bg-surface">
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line-soft px-5 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-3">
-          <span className="font-display text-[17px] text-ink">
+      <div className="flex h-full w-full max-w-[520px] flex-col bg-surface lg:max-w-none">
+        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-line-soft px-5 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-3 lg:px-8 lg:py-[18px]">
+          <span className="font-display text-[17px] text-ink lg:text-[21px]">
             {post.kind === 'poll' ? 'Poll' : post.kind === 'notice' ? 'From Amake Fe' : 'Question'}
           </span>
           <button type="button" onClick={onClose} className="text-sm text-body">
@@ -45,10 +54,12 @@ export function PostDetail({ post, onClose }: { post: CommunityPost; onClose: ()
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-          <Body post={post} />
-          <Engagement post={post} />
-          <Comments postId={post.id} />
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 lg:px-8 lg:py-8">
+          <div className="lg:mx-auto lg:w-full lg:max-w-[680px]">
+            <Body post={post} />
+            <Engagement post={post} />
+            <Comments postId={post.id} />
+          </div>
         </div>
       </div>
     </div>

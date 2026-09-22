@@ -112,8 +112,21 @@ function StoryBody({
   }
 
   return (
-    <article>
-      <div className="sticky top-0 z-5 flex items-center justify-between bg-surface/95 px-5 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-3 backdrop-blur-sm">
+    /**
+     * On a phone this is one column, exactly as designed. From `lg` the prose
+     * keeps a readable measure and everything *around* the reading — where you
+     * are in the series, the reaction, what to read next — moves into a rail
+     * beside it instead of queueing underneath.
+     *
+     * The desktop classes live here and never inside `StoryReading`: that
+     * component is also what the studio renders in its 402px phone frame, and
+     * `lg:` is a viewport query, not a container one — a `lg:` rule added there
+     * would fire inside the preview and show the creator a phone that is not a
+     * phone.
+     */
+    <article className="lg:mx-auto lg:flex lg:w-full lg:max-w-[1080px] lg:items-start lg:gap-10 lg:px-6 lg:pt-6 lg:pb-16">
+      <div className="lg:min-w-0 lg:flex-1">
+      <div className="sticky top-0 z-5 flex items-center justify-between bg-surface/95 px-5 pt-[calc(12px+env(safe-area-inset-top,0px))] pb-3 backdrop-blur-sm lg:static lg:px-0 lg:pt-0">
         <Link to="/stories" className="flex items-center gap-1 text-sm text-body">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -130,7 +143,7 @@ function StoryBody({
                 ),
             })
           }
-          className={`text-[13px] font-semibold ${saved ? 'text-accent' : 'text-body'}`}
+          className={`text-[13px] font-semibold lg:hidden ${saved ? 'text-accent' : 'text-body'}`}
         >
           {saved ? 'Saved' : 'Save'}
         </button>
@@ -151,7 +164,7 @@ function StoryBody({
         resolveImage={resolveImage}
         markUrl={portrait}
         footer={
-          <nav className="flex gap-[10px] px-[22px] pt-[22px]">
+          <nav className="flex gap-[10px] px-[22px] pt-[22px] lg:hidden">
             {partNumber > 1 && (
               <Pill variant="quiet" className="flex-1" onClick={() => goToPart(partNumber - 1)}>
                 ← Previous
@@ -178,7 +191,13 @@ function StoryBody({
         }
       />
 
-      <div className="mx-[22px] mt-[22px] flex items-center gap-[22px] border-t border-line-soft pt-4">
+      </div>
+
+      <aside className="lg:sticky lg:top-6 lg:w-[272px] lg:shrink-0 lg:space-y-5">
+      {/* One block for everything the reader can do with this story. On a
+          phone it is a row under the prose; in the rail it is a card, so the
+          heart is not left floating at the top of an empty column. */}
+      <div className="mx-[22px] mt-[22px] flex items-center gap-[22px] border-t border-line-soft pt-4 lg:mx-0 lg:mt-0 lg:gap-4 lg:rounded-card lg:border lg:border-line-card lg:border-t lg:p-4">
         <button
           type="button"
           onClick={() =>
@@ -194,10 +213,45 @@ function StoryBody({
           <span className="text-accent">♥</span>
           {formatCount(story.card.likeCount)}
         </button>
+        <button
+          type="button"
+          onClick={() =>
+            toggleSaved.mutate(story.card.id, {
+              onError: (error) =>
+                signIn.onError(error, 'Save this for later?', () =>
+                  toggleSaved.mutate(story.card.id),
+                ),
+            })
+          }
+          className={`hidden text-sm font-semibold lg:block ${saved ? 'text-accent' : 'text-body'}`}
+        >
+          {saved ? 'Saved' : 'Save'}
+        </button>
       </div>
 
+      {/* The rail's own copy of the part controls, which the footer hides from
+          `lg` — beside the prose they are a place in the series rather than a
+          thing to scroll to the end for. */}
+      <nav className="hidden gap-[10px] lg:flex">
+        {partNumber > 1 && (
+          <Pill variant="quiet" className="flex-1" onClick={() => goToPart(partNumber - 1)}>
+            ← Previous
+          </Pill>
+        )}
+        {series && (
+          <Pill
+            variant={atEnd && !seriesComplete ? 'quiet' : 'ink'}
+            className="flex-1"
+            disabled={atEnd}
+            onClick={() => goToPart(partNumber + 1)}
+          >
+            {atEnd ? (seriesComplete ? 'Finish' : `Part ${partNumber + 1} is coming`) : 'Next part →'}
+          </Pill>
+        )}
+      </nav>
+
       {related.data && related.data.length > 0 && (
-        <section className="px-[22px] pt-6 pb-8">
+        <section className="px-[22px] pt-6 pb-8 lg:px-0 lg:pt-0 lg:pb-0">
           <h3 className="font-display text-[19px] text-ink">Related stories</h3>
           <div className="mt-3">
             {related.data.map((other) => (
@@ -213,6 +267,8 @@ function StoryBody({
           </div>
         </section>
       )}
+
+      </aside>
 
       {signIn.node}
     </article>

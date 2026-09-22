@@ -19,7 +19,7 @@ export function SupportScreen() {
   const tooSmall = chosen < MIN_KWACHA
 
   return (
-    <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-8">
+    <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-8 lg:mx-auto lg:w-full lg:max-w-[560px] lg:px-6 lg:pt-10 lg:pb-16">
       <Link to="/" className="text-sm text-body">
         ← Back
       </Link>

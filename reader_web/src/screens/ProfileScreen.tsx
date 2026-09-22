@@ -24,7 +24,7 @@ export function ProfileScreen() {
   const stats = useReaderStats()
 
   return (
-    <div className="flex flex-col gap-[18px] px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-6">
+    <div className="flex flex-col gap-[18px] px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] pb-6 lg:mx-auto lg:w-full lg:max-w-[680px] lg:px-6 lg:pt-8 lg:pb-14">
       <Async query={stats} loading={<div className="h-20 animate-pulse rounded-card bg-surface-tint" />}>
         {(data) => <Identity stats={data} />}
       </Async>

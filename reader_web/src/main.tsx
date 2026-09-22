@@ -3,8 +3,11 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router'
 
+import { Link } from 'react-router'
 import './styles.css'
 import { AuthProvider } from './auth'
+import { Mark } from './components/Mark'
+import { TopNav } from './components/nav'
 import { TabBar } from './components/TabBar'
 import { HomeScreen } from './screens/HomeScreen'
 
@@ -50,14 +53,56 @@ function Crashed() {
   )
 }
 
+/**
+ * Two layouts, one tree.
+ *
+ * **Phone** is the design in docs/screens, untouched: a 520px column with the
+ * bottom tab bar, the page itself scrolling.
+ *
+ * **Desktop** is a top bar in three zones, the way Facebook's is — brand on the
+ * left, the destinations in the middle, the one call to action on the right.
+ * That is deliberate rather than generic: this audience arrives from Facebook
+ * and already knows where to look. The prototypes do not draw a desktop view at
+ * all, so this is a stated deviation, built in their vocabulary rather than as
+ * a phone stretched across a monitor — where a bar pinned to the bottom edge of
+ * a 27-inch screen is nobody's navigation.
+ *
+ * The breakpoint is `lg` (1024px). Tablets keep the phone layout: below that
+ * the three zones cannot all fit without one of them becoming a puzzle.
+ */
 function Shell() {
   return (
-    // The reader is a phone-width column, centred on anything wider.
-    <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col bg-surface">
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <TabBar />
+    <div className="bg-surface lg:flex lg:h-dvh lg:flex-col lg:overflow-hidden">
+      <header className="hidden shrink-0 border-b border-line bg-surface lg:block">
+        <div className="mx-auto flex h-[60px] max-w-[1280px] items-stretch justify-between gap-6 px-6">
+          <Link to="/" className="flex shrink-0 items-center gap-[11px]">
+            <Mark size={36} />
+            <span className="font-display text-[17px] leading-tight text-ink">
+              Mindful Moments
+            </span>
+          </Link>
+
+          <TopNav />
+
+          <div className="flex shrink-0 items-center">
+            <Link
+              to="/share"
+              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-[#fff6ea]"
+            >
+              Share Your Story
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* On a phone this whole div is the page and the window scrolls it; from
+          `lg` it is the only scroll region, so the bar above stays put. */}
+      <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col lg:min-h-0 lg:max-w-none lg:flex-1 lg:overflow-y-auto">
+        <main className="flex-1">
+          <Outlet />
+        </main>
+        <TabBar />
+      </div>
       <ScrollRestoration />
     </div>
   )

@@ -32,15 +32,17 @@ export function StoriesScreen() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
-    <div className="flex flex-col pb-6">
-      <div className="px-5 pt-[calc(16px+env(safe-area-inset-top,0px))]">
+    <div className="flex flex-col pb-6 lg:mx-auto lg:w-full lg:max-w-[720px] lg:px-6 lg:pb-12">
+      <div className="px-5 pt-[calc(16px+env(safe-area-inset-top,0px))] lg:px-0 lg:pt-8">
         <h1 className="font-display text-[26px] text-ink">Stories</h1>
       </div>
 
       {/* Search and the category chips pin to the top; the title scrolls away
        *  above them. Full-bleed background with matching padding, so the page
        *  does not show through at the edges as rows slide underneath. */}
-      <div className="sticky top-0 z-10 bg-surface/95 px-5 pt-[10px] pb-2 backdrop-blur-sm">
+      {/* Sticky to the scroll container, which is the window on a phone and the
+          content area from `lg` — the top bar sits above it either way. */}
+      <div className="sticky top-0 z-10 bg-surface/95 px-5 pt-[10px] pb-2 backdrop-blur-sm lg:-mx-6 lg:px-6 lg:pt-4 lg:pb-3">
         <div className="relative">
           <svg
             className="absolute top-1/2 left-4 -translate-y-1/2 text-subtle"
@@ -90,7 +92,7 @@ export function StoriesScreen() {
         </div>
       </div>
 
-      <div className="px-5 pt-1">
+      <div className="px-5 pt-1 lg:px-0">
         <Async query={stories}>
           {(data) => {
             const list = data.pages.flatMap((page) => page.items)
@@ -102,6 +104,9 @@ export function StoriesScreen() {
               </p>
             ) : (
               <>
+                {/* A list, at every width. Two columns of rows read as two
+                    separate lists and push titles into wrapping early; the
+                    column simply gets a comfortable measure instead. */}
                 {list.map((story) => (
                   <StoryRow key={story.id} story={story} />
                 ))}

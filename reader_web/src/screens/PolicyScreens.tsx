@@ -22,7 +22,7 @@ const CONTACT = import.meta.env.VITE_CONTACT_EMAIL ?? 'privacy@javuapps.com'
 
 function Policy({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-10">
+    <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-10 lg:mx-auto lg:w-full lg:max-w-[680px] lg:px-6 lg:pt-10 lg:pb-16">
       <Link to="/profile" className="text-sm text-body">
         ← Back
       </Link>
