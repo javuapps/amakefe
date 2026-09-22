@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+@import '@amakefe/core/fonts.css';
+@import '@amakefe/core/tokens.css';
+
+/* Tailwind auto-detects sources under this app only, and skips node_modules —
+   where the workspace link to @amakefe/ui lives. Without this, any class used
+   *only* in a shared component is silently absent from the build: story prose
+   lost its paragraph spacing, its pull-quote rule and its figure margins, and
+   nothing failed. Classes that happened to also appear in app source survived,
+   which is what made it look like a rendering quirk rather than missing CSS. */
+@source '../../packages/ui/src';
+
+/* The editing surface should look like the page, not like a textarea — that is
+   the whole point of editing in place. These mirror StoryProse in @amakefe/ui;
+   if one changes, change both. */
+.prose-editor :where(p) {
+  margin: 0 0 17px;
+}
+.prose-editor :where(p:last-child) {
+  margin-bottom: 0;
+}
+.prose-editor :where(h2) {
+  font-family: var(--font-display);
+  font-size: 21px;
+  line-height: 1.3;
+  color: var(--color-ink);
+  margin: 28px 0 16px;
+}
+.prose-editor :where(blockquote) {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 16px;
+  margin: 24px 0;
+  font-style: italic;
+  color: var(--color-body);
+}
+/* An asterism, as the reader renders it — not a grey line across the page. */
+.prose-editor :where(hr) {
+  border: 0;
+  height: 0;
+  /* Without this the pseudo-element is clipped and the break looks like a gap. */
+  overflow: visible;
+  margin: 32px 0;
+  text-align: center;
+  color: var(--color-muted);
+}
+.prose-editor :where(hr)::before {
+  content: '⁂';
+  letter-spacing: 0.5em;
+  font-size: 18px;
+}
+.prose-editor :where(img) {
+  border-radius: var(--radius-card);
+  margin: 24px 0;
+  max-width: 100%;
+}
+.prose-editor :where(strong) {
+  font-weight: 600;
+}
+.prose-editor:focus {
+  outline: none;
+}

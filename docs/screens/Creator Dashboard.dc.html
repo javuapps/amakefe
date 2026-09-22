@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;600;700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #EFE7DB; font-family: Karla, system-ui, sans-serif; color: #2E1F2B; }
+  a { color: #C05E3C; text-decoration: none; }
+  a:hover { color: #8E3F26; }
+</style>
+</helmet>
+
+<div style="display: flex; min-height: 100vh; background: #FBF7F0">
+
+  <div style="width: 244px; flex: none; background: #2E1F2B; display: flex; flex-direction: column; padding: 24px 0">
+    <div style="display: flex; align-items: center; gap: 11px; padding: 0 22px 26px">
+      <img src="assets/portrait.png" alt="" style="width: 38px; height: 38px; display: block">
+      <div style="display: flex; flex-direction: column; gap: 2px">
+        <div style="font-family: Marcellus; font-size: 15px; color: #F6EDE0; line-height: 1.1">Mindful Moments</div>
+        <div style="font-size: 9.5px; letter-spacing: 0.2em; text-transform: uppercase; color: #9C8878">Creator studio</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 0 12px">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+        <div onClick="{{ n.go }}" style="display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 8px; cursor: pointer; background: {{ n.bg }}; color: {{ n.color }}; font-size: 14px; font-weight: 500">
+          <span style="width: 18px; text-align: center; opacity: 0.9">{{ n.glyph }}</span>
+          <span>{{ n.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="margin-top: auto; padding: 20px 22px 0; display: flex; flex-direction: column; gap: 14px">
+      <div style="border-top: 1px solid rgba(246,237,224,0.14); padding-top: 18px; display: flex; flex-direction: column; gap: 5px">
+        <div style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #9C8878">In the inbox</div>
+        <div style="font-family: Marcellus; font-size: 26px; color: #E0A43B">7</div>
+        <div style="font-size: 12px; color: #C9B6A4; line-height: 1.5">conversations waiting to become stories</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding-top: 6px">
+        <div style="width: 30px; height: 30px; border-radius: 50%; background: #C05E3C; color: #FFF6EA; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600">G</div>
+        <div style="font-size: 13px; color: #D9C7B6">Gracious</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 22px 32px; border-bottom: 1px solid #EBDFCE; background: #FFFDF9">
+      <div style="display: flex; flex-direction: column; gap: 3px">
+        <div style="font-family: Marcellus; font-size: 23px; line-height: 1.1">{{ pageTitle }}</div>
+        <div style="font-size: 13px; color: #8A7767">{{ pageSub }}</div>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button onClick="{{ goWrite }}" style="font-family: Karla; font-weight: 600; font-size: 13.5px; color: #5B4B41; background: none; border: 1px solid #DCCDB8; border-radius: 8px; padding: 10px 16px; cursor: pointer" style-hover="border-color: #2E1F2B">New part</button>
+        <button onClick="{{ goWrite }}" style="font-family: Karla; font-weight: 600; font-size: 13.5px; color: #FFF6EA; background: #C05E3C; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer" style-hover="background: #A94A2E">Write a story</button>
+      </div>
+    </div>
+
+    <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+      <div style="padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 22px">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+          <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+            <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 7px">
+              <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">{{ s.label }}</div>
+              <div style="font-family: Marcellus; font-size: 30px; line-height: 1">{{ s.value }}</div>
+              <div style="font-size: 12.5px; color: {{ s.deltaColor }}">{{ s.delta }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 18px">
+            <div style="display: flex; align-items: baseline; justify-content: space-between">
+              <div style="font-family: Marcellus; font-size: 19px">Part-to-part retention</div>
+              <div style="font-size: 12.5px; color: #8A7767">The Number I Kept Calling</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <sc-for list="{{ retention }}" as="r" hint-placeholder-count="5">
+                <div style="display: flex; align-items: center; gap: 14px">
+                  <div style="width: 58px; font-size: 12.5px; color: #5B4B41">{{ r.label }}</div>
+                  <div style="flex: 1; height: 26px; background: #F4EADC; border-radius: 6px; overflow: hidden">
+                    <div style="height: 100%; background: {{ r.color }}; width: {{ r.width }}"></div>
+                  </div>
+                  <div style="width: 96px; text-align: right; font-size: 12.5px; color: #5B4B41">{{ r.value }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size: 12.5px; color: #8A7767; line-height: 1.6">Part 2 is where readers drop. The teaser on Facebook links straight to Part 1, so Part 2 is the first click they have to choose.</div>
+          </div>
+
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: Marcellus; font-size: 19px">Publishing queue</div>
+            <sc-for list="{{ queue }}" as="q" hint-placeholder-count="4">
+              <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-top: 1px solid #F2E8DA">
+                <div style="width: 7px; height: 7px; border-radius: 50%; background: {{ q.dot }}; margin-top: 6px; flex: none"></div>
+                <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                  <div style="font-size: 14px; font-weight: 600">{{ q.title }}</div>
+                  <div style="font-size: 12px; color: #8A7767">{{ q.when }}</div>
+                </div>
+              </div>
+            </sc-for>
+            <div onClick="{{ goSchedule }}" style="font-size: 13px; color: #C05E3C; cursor: pointer; padding-top: 4px">Open the schedule →</div>
+          </div>
+        </div>
+
+        <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 22px 24px; display: flex; flex-direction: column; gap: 4px">
+          <div style="font-family: Marcellus; font-size: 19px; padding-bottom: 10px">Stories this month</div>
+          <div style="display: grid; grid-template-columns: 2.4fr 1fr 1fr 1fr 1fr; gap: 12px; padding: 10px 0; border-bottom: 1px solid #EBDFCE; font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: #8A7767">
+            <div>Story</div><div>Readers</div><div>Completion</div><div>Comments</div><div>Saves</div>
+          </div>
+          <sc-for list="{{ table }}" as="t" hint-placeholder-count="5">
+            <div style="display: grid; grid-template-columns: 2.4fr 1fr 1fr 1fr 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid #F4EADC; font-size: 13.5px; align-items: center">
+              <div style="display: flex; flex-direction: column; gap: 3px">
+                <span style="font-weight: 600">{{ t.title }}</span>
+                <span style="font-size: 11.5px; color: #8A7767">{{ t.meta }}</span>
+              </div>
+              <div>{{ t.readers }}</div>
+              <div>{{ t.completion }}</div>
+              <div>{{ t.comments }}</div>
+              <div>{{ t.saves }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWrite }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 24px 32px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start">
+        <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 30px 34px; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; gap: 8px">
+            <sc-for list="{{ partTabs }}" as="p" hint-placeholder-count="5">
+              <div onClick="{{ p.select }}" style="font-size: 12.5px; padding: 7px 13px; border-radius: 999px; cursor: pointer; border: 1px solid {{ p.border }}; background: {{ p.bg }}; color: {{ p.color }}">{{ p.label }}</div>
+            </sc-for>
+          </div>
+          <div style="font-family: Marcellus; font-size: 32px; line-height: 1.2; border-bottom: 1px solid #F2E8DA; padding-bottom: 14px">The Number I Kept Calling</div>
+          <div style="font-size: 12.5px; color: #8A7767">{{ draftMeta }}</div>
+          <div style="display: flex; flex-direction: column; gap: 16px; font-family: Lora, Georgia, serif; font-size: 16.5px; line-height: 1.85; color: #33272F">
+            <sc-for list="{{ draftParagraphs }}" as="d" hint-placeholder-count="4">
+              <div>{{ d.text }}</div>
+            </sc-for>
+            <div style="color: #B3A091; font-style: italic">Continue writing…</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Story details</div>
+            <sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <div style="font-size: 12px; color: #8A7767">{{ f.label }}</div>
+                <div style="font-size: 14px; border: 1px solid #E6DACA; border-radius: 8px; padding: 10px 12px; background: #FDFAF4">{{ f.value }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Consent checklist</div>
+            <sc-for list="{{ consent }}" as="c" hint-placeholder-count="4">
+              <div onClick="{{ c.toggle }}" style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer">
+                <div style="width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid {{ c.border }}; background: {{ c.bg }}; color: #FFF6EA; font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none; margin-top: 1px">{{ c.mark }}</div>
+                <div style="font-size: 13px; line-height: 1.5; color: #4A3A44">{{ c.label }}</div>
+              </div>
+            </sc-for>
+            <div style="font-size: 12px; color: {{ consentColor }}; padding-top: 4px">{{ consentStatus }}</div>
+          </div>
+
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Safety check</div>
+            <sc-for list="{{ flags }}" as="f" hint-placeholder-count="3">
+              <div style="display: flex; gap: 10px; align-items: flex-start">
+                <span style="color: {{ f.color }}; font-size: 13px">{{ f.icon }}</span>
+                <div style="font-size: 13px; line-height: 1.5; color: #4A3A44">{{ f.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; gap: 10px">
+            <button style="flex: 1; font-family: Karla; font-weight: 600; font-size: 13.5px; color: #5B4B41; background: none; border: 1px solid #DCCDB8; border-radius: 8px; padding: 12px; cursor: pointer">Save draft</button>
+            <button onClick="{{ goSchedule }}" style="flex: 1; font-family: Karla; font-weight: 600; font-size: 13.5px; color: #FFF6EA; background: #2E1F2B; border: none; border-radius: 8px; padding: 12px; cursor: pointer">Schedule…</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSeries }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 18px">
+        <sc-for list="{{ series }}" as="s" hint-placeholder-count="2">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 24px 26px; display: flex; flex-direction: column; gap: 16px">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 20px">
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="font-family: Marcellus; font-size: 22px">{{ s.title }}</div>
+                <div style="font-size: 12.5px; color: #8A7767">{{ s.meta }}</div>
+              </div>
+              <div style="font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase; padding: 7px 12px; border-radius: 999px; background: {{ s.statusBg }}; color: {{ s.statusColor }}">{{ s.status }}</div>
+            </div>
+            <div style="display: flex; flex-direction: column">
+              <sc-for list="{{ s.parts }}" as="p" hint-placeholder-count="4">
+                <div style="display: flex; align-items: center; gap: 14px; padding: 13px 0; border-top: 1px solid #F2E8DA">
+                  <span style="color: #C6B6A4; font-size: 14px; cursor: grab">⠿</span>
+                  <div style="width: 60px; font-size: 12.5px; color: #8A7767">{{ p.number }}</div>
+                  <div style="flex: 1; font-size: 14px; font-weight: 500">{{ p.title }}</div>
+                  <div style="width: 130px; font-size: 12.5px; color: #8A7767">{{ p.words }}</div>
+                  <div style="width: 150px; font-size: 12.5px; color: {{ p.stateColor }}">{{ p.state }}</div>
+                  <div style="font-size: 12.5px; color: #C05E3C; cursor: pointer">Edit</div>
+                </div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 10px; padding-top: 4px">
+              <button onClick="{{ goWrite }}" style="font-family: Karla; font-weight: 600; font-size: 13px; color: #5B4B41; background: none; border: 1px solid #DCCDB8; border-radius: 8px; padding: 10px 15px; cursor: pointer">Add a part</button>
+              <button onClick="{{ goSchedule }}" style="font-family: Karla; font-weight: 600; font-size: 13px; color: #5B4B41; background: none; border: 1px solid #DCCDB8; border-radius: 8px; padding: 10px 15px; cursor: pointer">Schedule the series</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSchedule }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 28px 32px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start">
+        <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 24px 26px; display: flex; flex-direction: column; gap: 16px">
+          <div style="font-family: Marcellus; font-size: 19px">Week of 21 September</div>
+          <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px">
+            <sc-for list="{{ week }}" as="d" hint-placeholder-count="7">
+              <div style="border: 1px solid #EFE4D5; border-radius: 10px; min-height: 172px; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: {{ d.bg }}">
+                <div style="font-size: 11px; color: #8A7767">{{ d.label }}</div>
+                <sc-for list="{{ d.items }}" as="i" hint-placeholder-count="1">
+                  <div style="border-radius: 7px; padding: 8px; background: {{ i.bg }}; color: {{ i.color }}; display: flex; flex-direction: column; gap: 3px">
+                    <div style="font-size: 11.5px; font-weight: 600; line-height: 1.3">{{ i.title }}</div>
+                    <div style="font-size: 10.5px; opacity: 0.85">{{ i.time }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Publish Part 4 to</div>
+            <sc-for list="{{ channels }}" as="c" hint-placeholder-count="5">
+              <div onClick="{{ c.toggle }}" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer">
+                <div style="font-size: 13.5px">{{ c.label }}</div>
+                <div style="width: 38px; height: 22px; border-radius: 999px; background: {{ c.trackBg }}; padding: 2px; box-sizing: border-box; display: flex; justify-content: {{ c.justify }}">
+                  <div style="width: 18px; height: 18px; border-radius: 50%; background: #FFFDF9"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 10px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Push notification</div>
+            <div style="border: 1px solid #E6DACA; border-radius: 8px; padding: 12px; background: #FDFAF4; display: flex; flex-direction: column; gap: 4px">
+              <div style="font-size: 13.5px; font-weight: 600">Part 4 is now available</div>
+              <div style="font-size: 12.5px; color: #5B4B41; line-height: 1.5">Continue reading "The Number I Kept Calling".</div>
+            </div>
+            <div style="font-size: 12px; color: #8A7767; line-height: 1.5">Goes to 41,208 readers who follow this series.</div>
+          </div>
+          <button style="font-family: Karla; font-weight: 700; font-size: 14px; color: #FFF6EA; background: #C05E3C; border: none; border-radius: 8px; padding: 14px; cursor: pointer">Schedule for Tue, 7:00 PM</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isModeration }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 28px 32px 48px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start">
+        <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 24px 26px; display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 8px">
+            <div style="font-family: Marcellus; font-size: 19px">Comments waiting</div>
+            <div style="font-size: 12.5px; color: #8A7767">{{ pendingCount }}</div>
+          </div>
+          <sc-for list="{{ pending }}" as="c" hint-placeholder-count="4">
+            <div style="border-top: 1px solid #F2E8DA; padding: 16px 0; display: flex; flex-direction: column; gap: 10px">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: #F4EADC; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8A7767">{{ c.initial }}</div>
+                <div style="font-size: 13.5px; font-weight: 600">{{ c.name }}</div>
+                <div style="font-size: 12px; color: #8A7767">on {{ c.story }}</div>
+                <sc-if value="{{ c.flagged }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #A94A2E; background: #FAEDE3; border-radius: 999px; padding: 4px 9px">{{ c.flag }}</div>
+                </sc-if>
+              </div>
+              <div style="font-family: Lora, Georgia, serif; font-size: 14.5px; line-height: 1.7; color: #33272F">{{ c.text }}</div>
+              <div style="display: flex; gap: 8px">
+                <button onClick="{{ c.approve }}" style="font-family: Karla; font-weight: 600; font-size: 12.5px; color: #2F6B4F; background: #EDF5EF; border: 1px solid #CFE3D6; border-radius: 7px; padding: 8px 14px; cursor: pointer">Approve</button>
+                <button onClick="{{ c.hide }}" style="font-family: Karla; font-weight: 600; font-size: 12.5px; color: #A94A2E; background: #FAEDE3; border: 1px solid #EBD2C2; border-radius: 7px; padding: 8px 14px; cursor: pointer">Hide</button>
+                <button onClick="{{ c.hide }}" style="font-family: Karla; font-weight: 600; font-size: 12.5px; color: #5B4B41; background: none; border: 1px solid #E6DACA; border-radius: 7px; padding: 8px 14px; cursor: pointer">Hide and mute member</button>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 30px 0; text-align: center; font-size: 14px; color: #8A7767">Queue cleared. Nothing waiting.</div>
+          </sc-if>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+            <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">Reports</div>
+            <sc-for list="{{ reports }}" as="r" hint-placeholder-count="3">
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; padding: 9px 0; border-top: 1px solid #F2E8DA">
+                <span>{{ r.type }}</span>
+                <span style="color: #8A7767">{{ r.count }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background: #F6EDE0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 8px">
+            <div style="font-family: Marcellus; font-size: 17px">Escalation</div>
+            <div style="font-size: 13px; line-height: 1.6; color: #5B4B41">One comment this week mentioned immediate danger. It is held out of the queue and waiting for your review.</div>
+            <div style="font-size: 13px; font-weight: 600; color: #A94A2E; cursor: pointer">Review it now →</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSupporters }}" hint-placeholder-val="{{ false }}">
+      <div style="padding: 28px 32px 48px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+          <sc-for list="{{ revenueStats }}" as="s" hint-placeholder-count="4">
+            <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 7px">
+              <div style="font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7767">{{ s.label }}</div>
+              <div style="font-family: Marcellus; font-size: 28px; line-height: 1">{{ s.value }}</div>
+              <div style="font-size: 12.5px; color: {{ s.deltaColor }}">{{ s.delta }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px">
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 24px 26px; display: flex; flex-direction: column; gap: 18px">
+            <div style="display: flex; align-items: baseline; justify-content: space-between">
+              <div style="font-family: Marcellus; font-size: 19px">Monthly support</div>
+              <div style="font-size: 12.5px; color: #8A7767">Last six months, ZMW</div>
+            </div>
+            <div style="display: flex; align-items: flex-end; gap: 18px; height: 190px">
+              <sc-for list="{{ bars }}" as="b" hint-placeholder-count="6">
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px">
+                  <div style="font-size: 11.5px; color: #5B4B41">{{ b.value }}</div>
+                  <div style="width: 100%; background: {{ b.color }}; border-radius: 6px 6px 0 0; height: {{ b.height }}"></div>
+                  <div style="font-size: 11.5px; color: #8A7767">{{ b.label }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background: #FFFDF9; border: 1px solid #EBDFCE; border-radius: 12px; padding: 24px 26px; display: flex; flex-direction: column; gap: 6px">
+            <div style="font-family: Marcellus; font-size: 19px; padding-bottom: 8px">Recent support</div>
+            <sc-for list="{{ transactions }}" as="t" hint-placeholder-count="5">
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-top: 1px solid #F2E8DA">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <div style="font-size: 13.5px; font-weight: 500">{{ t.name }}</div>
+                  <div style="font-size: 11.5px; color: #8A7767">{{ t.method }}</div>
+                </div>
+                <div style="font-family: Marcellus; font-size: 16px">{{ t.amount }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const COMMENTS = [
+  { id: 1, name: 'Mwila K.', initial: 'M', story: 'The Number I Kept Calling', text: 'I waited four months before I asked. Reading Part 3 felt like someone had been in my kitchen watching me.', flagged: false, flag: '' },
+  { id: 2, name: 'Bwalya C.', initial: 'B', story: 'The Money We Never Talked About', text: 'My wife and I sat down last night with a notebook because of this story. Thank you for writing it gently.', flagged: false, flag: '' },
+  { id: 3, name: 'Anonymous member', initial: 'A', story: 'The Number I Kept Calling', text: 'She should just leave him, all these men are the same, and anyone who stays deserves what they get.', flagged: true, flag: 'Personal attack' },
+  { id: 4, name: 'Natasha P.', initial: 'N', story: 'My Mother-in-Law Moved In', text: 'I recognised the exact house. Is this the woman from Kabulonga who works at the bank?', flagged: true, flag: 'Identifying detail' }
+];
+
+class Component extends DCLogic {
+  state = {
+    page: 'dashboard', part: 4, hidden: [],
+    consent: [true, true, true, false],
+    channels: [true, true, true, false, true]
+  };
+
+  go = (page) => this.setState({ page });
+
+  renderVals() {
+    const s = this.state;
+    const titles = {
+      dashboard: ['Dashboard', 'Tuesday, 22 September 2026'],
+      write: ['Write', 'The Number I Kept Calling · Part 4 · Draft'],
+      series: ['Story series', '2 series in progress'],
+      schedule: ['Schedule & publish', 'Part 4 goes out this week'],
+      moderation: ['Moderation', 'Comments and reports waiting for you'],
+      supporters: ['Supporters & revenue', 'September 2026']
+    };
+    const pending = COMMENTS.filter(c => !s.hidden.includes(c.id));
+
+    return {
+      nav: [
+        ['dashboard', 'Dashboard', '◧'], ['write', 'Write', '✎'], ['series', 'Story series', '❏'],
+        ['schedule', 'Schedule', '◷'], ['moderation', 'Moderation', '⚑'], ['supporters', 'Supporters', '♥']
+      ].map(([key, label, glyph]) => ({
+        label, glyph,
+        bg: s.page === key ? 'rgba(246,237,224,0.12)' : 'transparent',
+        color: s.page === key ? '#F6EDE0' : '#B5A294',
+        go: () => this.go(key)
+      })),
+      pageTitle: titles[s.page][0],
+      pageSub: titles[s.page][1],
+      isDash: s.page === 'dashboard', isWrite: s.page === 'write', isSeries: s.page === 'series',
+      isSchedule: s.page === 'schedule', isModeration: s.page === 'moderation', isSupporters: s.page === 'supporters',
+      goWrite: () => this.go('write'), goSchedule: () => this.go('schedule'),
+
+      stats: [
+        { label: 'Weekly engaged readers', value: '18,420', delta: '+12% on last week', deltaColor: '#2F6B4F' },
+        { label: 'Stories read', value: '64,109', delta: '+8% on last week', deltaColor: '#2F6B4F' },
+        { label: 'Series completion', value: '61%', delta: '−3% on the last series', deltaColor: '#A94A2E' },
+        { label: 'Monthly support', value: 'ZMW 38,650', delta: '1,842 supporters', deltaColor: '#8A7767' }
+      ],
+      retention: [
+        { label: 'Part 1', value: '52,300 readers', width: '100%', color: '#2E1F2B' },
+        { label: 'Part 2', value: '38,940 · 74%', width: '74%', color: '#C05E3C' },
+        { label: 'Part 3', value: '34,120 · 88%', width: '65%', color: '#C05E3C' },
+        { label: 'Part 4', value: 'scheduled', width: '0%', color: '#E0A43B' },
+        { label: 'Part 5', value: 'in draft', width: '0%', color: '#E0A43B' }
+      ],
+      queue: [
+        { title: 'The Number I Kept Calling · Part 4', when: 'Scheduled Tue 7:00 PM · App, Website, Facebook', dot: '#E0A43B' },
+        { title: 'Community question: rebuilding trust', when: 'Scheduled Wed 6:00 PM', dot: '#E0A43B' },
+        { title: 'Nothing Prepared Me For Twins · Part 2', when: 'Draft · needs consent confirmation', dot: '#C05E3C' },
+        { title: 'Creator diary: what I learned in August', when: 'Draft', dot: '#C6B6A4' }
+      ],
+      table: [
+        { title: 'The Number I Kept Calling', meta: 'Trust · 5 parts', readers: '52,300', completion: '61%', comments: '2,104', saves: '3,880' },
+        { title: 'He Came Back After Two Years', meta: 'Reconciliation · 4 parts', readers: '31,770', completion: '68%', comments: '1,246', saves: '2,110' },
+        { title: 'The Money We Never Talked About', meta: 'Money · 4 parts', readers: '28,410', completion: '72%', comments: '980', saves: '1,905' },
+        { title: 'My Mother-in-Law Moved In', meta: 'In-Laws · 3 parts', readers: '24,090', completion: '70%', comments: '1,510', saves: '1,220' },
+        { title: 'Nothing Prepared Me For Twins', meta: 'Parenting · 2 parts', readers: '15,660', completion: '81%', comments: '604', saves: '890' }
+      ],
+
+      partTabs: [1, 2, 3, 4, 5].map(n => ({
+        label: 'Part ' + n,
+        border: s.part === n ? '#2E1F2B' : '#E6DACA',
+        bg: s.part === n ? '#2E1F2B' : 'transparent',
+        color: s.part === n ? '#F6EDE0' : '#5B4B41',
+        select: () => this.setState({ part: n })
+      })),
+      draftMeta: 'Part ' + s.part + ' · 1,140 words · last saved 6 minutes ago · from 4 phone calls and 9 voice notes',
+      draftParagraphs: [
+        { text: 'He did not answer the question I asked. He answered the one he had prepared for, which is how I knew he had been preparing.' },
+        { text: 'We sat in the sitting room with the television still on. I remember the sound of it more than anything he said in the first ten minutes.' },
+        { text: 'What I want other women to understand is that the confession is not the hard part. The hard part is the week after, when the house is quiet again and the children still need breakfast.' }
+      ],
+      fields: [
+        { label: 'Category', value: 'Trust' },
+        { label: 'Public author name', value: 'Anonymous Wife' },
+        { label: 'Contributor record', value: 'Contributor #10291 (private)' },
+        { label: 'Status', value: 'Draft · Part 4 of 5' }
+      ],
+      consent: [
+        'Permission to tell the story',
+        'Permission to publish anonymously',
+        'Identifying details changed and confirmed with her',
+        'Permission to publish in multiple parts'
+      ].map((label, i) => ({
+        label,
+        mark: s.consent[i] ? '✓' : '',
+        border: s.consent[i] ? '#2F6B4F' : '#DCCDB8',
+        bg: s.consent[i] ? '#2F6B4F' : 'transparent',
+        toggle: () => {
+          const next = s.consent.slice();
+          next[i] = !next[i];
+          this.setState({ consent: next });
+        }
+      })),
+      consentStatus: s.consent.every(Boolean) ? 'Consent complete — this part can be scheduled.' : 'Publishing is blocked until every box is confirmed.',
+      consentColor: s.consent.every(Boolean) ? '#2F6B4F' : '#A94A2E',
+      flags: [
+        { icon: '●', color: '#A94A2E', text: 'A phone number appears in paragraph 6. Remove it before publishing.' },
+        { icon: '●', color: '#E0A43B', text: 'A place name appears twice. Consider changing it.' },
+        { icon: '●', color: '#2F6B4F', text: 'No self-harm or immediate-danger language detected.' }
+      ],
+
+      series: [
+        {
+          title: 'The Number I Kept Calling', meta: 'Trust · Anonymous Wife · started 4 September',
+          status: 'Publishing', statusBg: '#FAEDE3', statusColor: '#A94A2E',
+          parts: [
+            { number: 'Part 1', title: 'The receipt in my handbag', words: '1,020 words', state: 'Published 4 Sep', stateColor: '#2F6B4F' },
+            { number: 'Part 2', title: 'A woman answered', words: '1,180 words', state: 'Published 11 Sep', stateColor: '#2F6B4F' },
+            { number: 'Part 3', title: 'Three weeks of not knowing', words: '1,240 words', state: 'Published 18 Sep', stateColor: '#2F6B4F' },
+            { number: 'Part 4', title: 'The question I actually asked', words: '1,140 words', state: 'Scheduled Tue 7:00 PM', stateColor: '#C05E3C' },
+            { number: 'Part 5', title: 'What we decided', words: '380 words', state: 'Draft', stateColor: '#8A7767' }
+          ]
+        },
+        {
+          title: 'Nothing Prepared Me For Twins', meta: 'Parenting · Anonymous Mother · started 21 August',
+          status: 'Awaiting consent', statusBg: '#F6EDE0', statusColor: '#8A6A2E',
+          parts: [
+            { number: 'Part 1', title: 'Double blessing', words: '860 words', state: 'Published 21 Aug', stateColor: '#2F6B4F' },
+            { number: 'Part 2', title: 'The year of the paraffin lamp', words: '940 words', state: 'Consent not confirmed', stateColor: '#A94A2E' }
+          ]
+        }
+      ],
+
+      week: [
+        { label: 'Mon 21', bg: '#FFFDF9', items: [] },
+        { label: 'Tue 22', bg: '#FDF7EE', items: [{ title: 'Part 4 · The Number I Kept Calling', time: '7:00 PM · App, Web, FB', bg: '#2E1F2B', color: '#F6EDE0' }] },
+        { label: 'Wed 23', bg: '#FFFDF9', items: [{ title: 'Community question', time: '6:00 PM · App', bg: '#F6EDE0', color: '#5B4B41' }] },
+        { label: 'Thu 24', bg: '#FFFDF9', items: [] },
+        { label: 'Fri 25', bg: '#FDF7EE', items: [{ title: 'Part 5 · The Number I Kept Calling', time: '7:00 PM · draft', bg: '#FAEDE3', color: '#A94A2E' }] },
+        { label: 'Sat 26', bg: '#FFFDF9', items: [{ title: 'Poll: separate accounts', time: '10:00 AM', bg: '#F6EDE0', color: '#5B4B41' }] },
+        { label: 'Sun 27', bg: '#FFFDF9', items: [{ title: 'Creator diary', time: '8:00 PM · draft', bg: '#F4EADC', color: '#8A7767' }] }
+      ],
+      channels: ['Community app', 'Public website', 'Push notification', 'Email digest', 'Facebook teaser'].map((label, i) => ({
+        label,
+        trackBg: s.channels[i] ? '#C05E3C' : '#DCCDB8',
+        justify: s.channels[i] ? 'flex-end' : 'flex-start',
+        toggle: () => {
+          const next = s.channels.slice();
+          next[i] = !next[i];
+          this.setState({ channels: next });
+        }
+      })),
+
+      pending: pending.map(c => ({
+        ...c,
+        approve: () => this.setState({ hidden: s.hidden.concat(c.id) }),
+        hide: () => this.setState({ hidden: s.hidden.concat(c.id) })
+      })),
+      pendingCount: pending.length + ' waiting',
+      queueEmpty: pending.length === 0,
+      reports: [
+        { type: 'Personal information', count: 3 },
+        { type: 'Harassment', count: 2 },
+        { type: 'Revealing an anonymous contributor', count: 1 },
+        { type: 'Harmful advice', count: 1 }
+      ],
+
+      revenueStats: [
+        { label: 'This month', value: 'ZMW 38,650', delta: '+ZMW 4,200 on August', deltaColor: '#2F6B4F' },
+        { label: 'Monthly supporters', value: '1,842', delta: '+96 this month', deltaColor: '#2F6B4F' },
+        { label: 'Average support', value: 'ZMW 21', delta: 'Median ZMW 25', deltaColor: '#8A7767' },
+        { label: 'Supporter conversion', value: '2.4%', delta: 'of weekly engaged readers', deltaColor: '#8A7767' }
+      ],
+      bars: [
+        { label: 'Apr', value: '19.4k', height: '44%', color: '#E4CBA8' },
+        { label: 'May', value: '22.8k', height: '52%', color: '#E4CBA8' },
+        { label: 'Jun', value: '26.1k', height: '60%', color: '#E0A43B' },
+        { label: 'Jul', value: '30.5k', height: '71%', color: '#E0A43B' },
+        { label: 'Aug', value: '34.4k', height: '82%', color: '#C05E3C' },
+        { label: 'Sep', value: '38.6k', height: '94%', color: '#C05E3C' }
+      ],
+      transactions: [
+        { name: 'Anonymous supporter', method: 'Airtel Money · monthly', amount: 'ZMW 50' },
+        { name: 'Mutinta S.', method: 'MTN MoMo · one-time', amount: 'ZMW 100' },
+        { name: 'Anonymous supporter', method: 'Zamtel Kwacha · monthly', amount: 'ZMW 25' },
+        { name: 'Kabwe L.', method: 'Card · monthly', amount: 'ZMW 250' },
+        { name: 'Anonymous supporter', method: 'Airtel Money · one-time', amount: 'ZMW 10' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

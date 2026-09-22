@@ -1,0 +1,220 @@
+/* Design tokens from the prototypes in docs/screens.
+ *
+ * Tailwind v4 reads @theme, so every token below is also a utility:
+ * --color-ink gives text-ink/bg-ink, --font-display gives font-display.
+ * Nothing in either app should hard-code a hex value or a font stack. */
+
+@theme {
+  --color-ink: #2e1f2b;
+  --color-ink-soft: #4a3a44;
+  --color-body: #5b4b41;
+  --color-muted: #8a7767;
+  --color-subtle: #9a8877;
+
+  --color-page: #efe7db;
+  --color-surface: #fffdf9;
+  --color-surface-warm: #f6ede0;
+  --color-surface-raised: #fbf6ee;
+  --color-surface-tint: #f0e7da;
+
+  --color-accent: #c05e3c;
+  --color-accent-dark: #8e3f26;
+  --color-accent-deep: #a94a2e;
+  --color-accent-wash: #faede3;
+
+  --color-gold: #e0a43b;
+  --color-green: #2f6b4f;
+
+  /* Facebook's own blue, for the sign-in button and nothing else. Meta's brand
+   * rules require the button unaltered, so this is the one colour in here that
+   * is not ours to adjust — it is quarantined in a token so nobody reaches for
+   * it as a general-purpose blue. */
+  --color-facebook: #1877f2;
+  --color-facebook-dark: #145dbf;
+
+  --color-line: #ebdfce;
+  --color-line-strong: #dccdb8;
+  --color-line-soft: #f0e7da;
+  --color-line-card: #e6daca;
+
+  /* Marcellus for titles, Karla for interface, Lora for story prose. Keeping the
+   * three apart is what makes a story page read like a page and not a feed. */
+  --font-display: "Marcellus", Georgia, serif;
+  --font-ui: "Karla", system-ui, -apple-system, sans-serif;
+  --font-prose: "Lora", Georgia, serif;
+
+  /* The wide-tracked uppercase label that sits above every section. */
+  --tracking-label: 0.26em;
+
+  --radius-card: 14px;
+  --radius-tile: 10px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Story prose runs long and is read in one sitting. */
+.prose-story {
+  font-family: var(--font-prose);
+  font-size: 16.5px;
+  line-height: 1.8;
+  color: var(--color-ink-soft);
+  text-wrap: pretty;
+}
+
+/* Tailwind v4's preflight dropped v3's `button { cursor: pointer }` in favour of
+ * the browser default, which is an arrow — so every button in both apps looked
+ * unclickable while every link looked fine. Restored here rather than by adding
+ * `cursor-pointer` to each button, because the next button added would not have
+ * it either. */
+button:not(:disabled),
+[role='button']:not(:disabled) {
+  cursor: pointer;
+}
+button:disabled,
+[role='button'][aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+/* Scrollbars.
+ *
+ * Several regions scroll independently — the page, a panel, the preview — and
+ * the browser default draws each as a wide grey trench. These are thin, have no
+ * track, and sit in the warm palette, so a second scrollbar reads as an edge
+ * rather than as furniture. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-line-strong);
+  border-radius: 999px;
+  /* Transparent border + background-clip keeps the thumb narrow without the
+     track needing a colour of its own. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* On the ink sidebar a dark thumb disappears. */
+.on-ink {
+  scrollbar-color: color-mix(in srgb, var(--color-surface-warm) 30%, transparent) transparent;
+}
+.on-ink::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-surface-warm) 30%, transparent);
+}
+
+/* The studio's device frame scrolls like the phone it is imitating: a fixed
+ * viewport with the story moving inside it, not a tall page pretending to be a
+ * handset.
+ *
+ * Its scrollbar is slimmer and softer than the page's, and a little inset from
+ * the bezel: it reads as the phone's own scroll indicator rather than a control
+ * borrowed from the desktop around it. It stays visible at rest — this is the
+ * only sign of how much story is left — and firms up under the pointer.
+ * `overscroll-behavior: contain` stops a flick past the end of the story from
+ * scrolling the studio behind it. */
+.phone-screen {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-muted) 38%, transparent) transparent;
+}
+.phone-screen::-webkit-scrollbar {
+  width: 10px;
+}
+.phone-screen::-webkit-scrollbar-track {
+  background: transparent;
+}
+.phone-screen::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-muted) 38%, transparent);
+  border-radius: 999px;
+  /* Transparent border + background-clip gives a 4px thumb floating clear of
+     the frame's edge, which a plain narrow track cannot do. */
+  border: 3px solid transparent;
+  background-clip: content-box;
+  transition: background-color 150ms ease;
+}
+.phone-screen:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-muted) 60%, transparent);
+}
+.phone-screen::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted);
+}
+
+/* A textarea that has outgrown its rows draws its own scrollbar, which reads as
+ * clutter next to the page's. These grow to fit what is in them instead.
+ * field-sizing is Chromium-only for now; elsewhere the rows attribute still
+ * applies and the behaviour is simply what it was. */
+textarea.auto-grow {
+  field-sizing: content;
+  min-height: 4.5rem;
+  /* No max-height on purpose: a cap just moves the scrollbar into the field,
+     which is the thing being avoided. Let it grow and let the page scroll. */
+}
+
+/* Drawers come in from the right, the way a side panel should: the page stays
+ * where it is and something arrives beside it. A sheet rising from the bottom
+ * reads as a phone gesture, and this is a desktop tool.
+ *
+ * The scrim fades rather than appearing, so the page does not flinch. The
+ * timing curve is weighted to decelerate — it leaves quickly and settles
+ * slowly, which is what makes a panel feel attached to the edge rather than
+ * thrown at it. */
+@keyframes drawer-scrim-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes drawer-panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.drawer-scrim {
+  animation: drawer-scrim-in 180ms ease-out;
+}
+.drawer-panel {
+  animation: drawer-panel-in 280ms cubic-bezier(0.32, 0.72, 0, 1);
+  /* Its own layer for the duration, so the text inside does not re-rasterise
+     on every frame of the slide. */
+  will-change: transform;
+}
+
+/* Someone who has asked for less motion gets the panel, not the journey. */
+@media (prefers-reduced-motion: reduce) {
+  .drawer-scrim,
+  .drawer-panel {
+    animation: none;
+  }
+}

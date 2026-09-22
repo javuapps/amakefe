@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #EFE7DB; font-family: Karla, system-ui, sans-serif; color: #2E1F2B; }
+  a { color: #C05E3C; text-decoration: none; }
+  a:hover { color: #8E3F26; }
+  ::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; box-sizing: border-box; padding: 40px 24px 56px; display: flex; flex-direction: column; align-items: center; gap: 24px">
+
+  <div style="display: flex; align-items: center; gap: 14px">
+    <img src="assets/portrait.png" alt="" style="width: 44px; height: 44px; display: block">
+    <div style="display: flex; flex-direction: column; gap: 3px">
+      <div style="font-family: Marcellus; font-size: 22px; line-height: 1">Mindful Moments — Reader App</div>
+      <div style="font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #8A7767">Clickable prototype</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 520px">
+    <sc-for list="{{ jumps }}" as="j" hint-placeholder-count="8">
+      <button onClick="{{ j.go }}" style="font-family: Karla; font-size: 12px; letter-spacing: 0.06em; padding: 7px 13px; border-radius: 999px; border: 1px solid #DCCDB8; background: #FBF6EE; color: #5B4B41; cursor: pointer" style-hover="background: #2E1F2B; color: #F6EDE0; border-color: #2E1F2B">{{ j.label }}</button>
+    </sc-for>
+  </div>
+
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ darkScreen }}" hint-size="402px,874px">
+
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 20px 12px; display: flex; align-items: center; justify-content: space-between">
+          <div style="display: flex; align-items: center; gap: 11px">
+            <img src="assets/portrait.png" alt="" style="width: 38px; height: 38px; display: block">
+            <div style="display: flex; flex-direction: column; gap: 2px">
+              <div style="font-size: 13px; color: #8A7767">Good evening, Chanda</div>
+              <div style="font-family: Marcellus; font-size: 17px; line-height: 1">Mindful Moments</div>
+            </div>
+          </div>
+          <div onClick="{{ goNotifications }}" style="width: 38px; height: 38px; border-radius: 50%; background: #F6EDE0; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2E1F2B" stroke-width="1.8" stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg>
+            <div style="position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: #C05E3C; border: 1.5px solid #FFFDF9"></div>
+          </div>
+        </div>
+
+        <div style="padding: 10px 20px 0">
+          <div style="border-radius: 14px; overflow: hidden; background: #2E1F2B">
+            <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
+              <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #E0A43B">Continue reading</div>
+              <div style="font-family: Marcellus; font-size: 27px; line-height: 1.15; color: #F6EDE0">The Number I Kept Calling</div>
+              <div style="font-size: 12px; color: #C9B6A4">Trust · Anonymous Wife · Part 3 of 5</div>
+              <div style="height: 4px; border-radius: 4px; background: rgba(246,237,224,0.22); overflow: hidden">
+                <div style="width: 60%; height: 100%; background: #E0A43B"></div>
+              </div>
+              <button onClick="{{ openFeatured }}" style="margin-top: 4px; align-self: flex-start; font-family: Karla; font-weight: 600; font-size: 14px; color: #2E1F2B; background: #E0A43B; border: none; border-radius: 999px; padding: 11px 22px; cursor: pointer" style-hover="background: #F6EDE0">Continue Part 3</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 26px 20px 0; display: flex; align-items: baseline; justify-content: space-between">
+          <div style="font-family: Marcellus; font-size: 19px">Latest stories</div>
+          <span onClick="{{ goStories }}" style="font-size: 12px; color: #C05E3C; cursor: pointer">See all</span>
+        </div>
+
+        <div style="padding: 12px 20px 0; display: flex; flex-direction: column; gap: 2px">
+          <sc-for list="{{ latest }}" as="s" hint-placeholder-count="3">
+            <div onClick="{{ s.open }}" style="display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid #F0E7DA; cursor: pointer; align-items: flex-start">
+              <div style="width: 54px; height: 54px; border-radius: 10px; background: #F6EDE0; display: flex; align-items: center; justify-content: center; flex: none; font-family: Marcellus; font-size: 19px; color: #C05E3C">{{ s.initial }}</div>
+              <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0">
+                <div style="font-family: Marcellus; font-size: 17px; line-height: 1.2">{{ s.title }}</div>
+                <div style="font-size: 12px; color: #8A7767">{{ s.meta }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="padding: 24px 20px 0">
+          <div style="border: 1px solid #E6DACA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; background: #FBF6EE">
+            <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #8A7767">Community question</div>
+            <div style="font-family: Marcellus; font-size: 19px; line-height: 1.3">Can a marriage survive after trust is broken?</div>
+            <div style="font-size: 13px; color: #5B4B41">412 members have answered</div>
+            <button onClick="{{ goCommunity }}" style="align-self: flex-start; margin-top: 4px; font-family: Karla; font-weight: 600; font-size: 13px; color: #2E1F2B; background: none; border: 1px solid #2E1F2B; border-radius: 999px; padding: 9px 18px; cursor: pointer" style-hover="background: #2E1F2B; color: #F6EDE0">Join the conversation</button>
+          </div>
+        </div>
+
+        <div style="padding: 16px 20px 0">
+          <div style="border: 1px solid #E6DACA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #8A7767">Poll</div>
+            <div style="font-family: Marcellus; font-size: 19px; line-height: 1.3">Should couples keep separate bank accounts?</div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <sc-for list="{{ pollOptions }}" as="o" hint-placeholder-count="3">
+                <div onClick="{{ o.vote }}" style="position: relative; overflow: hidden; border: 1px solid #E6DACA; border-radius: 10px; padding: 11px 14px; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px">
+                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #F6EDE0; width: {{ o.barWidth }}"></div>
+                  <span style="position: relative; font-weight: 500">{{ o.label }}</span>
+                  <span style="position: relative; color: #8A7767">{{ o.pct }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 16px 20px 0">
+          <div onClick="{{ goSupport }}" style="border-radius: 14px; padding: 18px; background: #C05E3C; color: #FFF6EA; cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+            <div style="font-family: Marcellus; font-size: 19px">Support the Community</div>
+            <div style="font-size: 13px; line-height: 1.5; color: #FFEBD8">If these stories have helped you, you can support the work behind them.</div>
+            <div style="display: flex; gap: 8px; margin-top: 4px">
+              <span style="font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 14px">ZMW 10</span>
+              <span style="font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 14px">ZMW 25</span>
+              <span style="font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.18); border-radius: 999px; padding: 7px 14px">ZMW 50</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 18px 20px 0">
+          <button onClick="{{ goShare }}" style="width: 100%; font-family: Karla; font-weight: 600; font-size: 15px; color: #F6EDE0; background: #2E1F2B; border: none; border-radius: 999px; padding: 15px; cursor: pointer">Share your story</button>
+        </div>
+
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="home" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStory }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="position: sticky; top: 0; z-index: 5; background: rgba(255,253,249,0.94); padding: 60px 20px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #F0E7DA">
+          <div onClick="{{ goBack }}" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; color: #5B4B41">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B4B41" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+            Back
+          </div>
+          <div style="display: flex; gap: 16px; align-items: center">
+            <div onClick="{{ toggleSave }}" style="cursor: pointer; font-size: 13px; font-weight: 600; color: {{ saveColor }}">{{ saveLabel }}</div>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#5B4B41" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M12 3v13"></path><path d="M8 7l4-4 4 4"></path></svg>
+          </div>
+        </div>
+
+        <div style="padding: 22px 22px 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #C05E3C">{{ story.category }} · Anonymous story</div>
+          <div style="font-family: Marcellus; font-size: 30px; line-height: 1.15">{{ story.title }}</div>
+          <div style="font-size: 13px; color: #8A7767">{{ story.author }} · {{ story.date }} · {{ story.readTime }}</div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px">
+            <div style="font-size: 12px; font-weight: 600; color: #2E1F2B">{{ partLabel }}</div>
+            <div style="flex: 1; height: 3px; border-radius: 3px; background: #F0E7DA; overflow: hidden">
+              <div style="height: 100%; background: #C05E3C; width: {{ partProgress }}"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 22px 0; display: flex; flex-direction: column; gap: 17px">
+          <sc-for list="{{ storyParagraphs }}" as="p" hint-placeholder-count="5">
+            <div style="font-family: Lora, Georgia, serif; font-size: 16.5px; line-height: 1.8; color: #33272F; text-wrap: pretty">{{ p.text }}</div>
+          </sc-for>
+        </div>
+
+        <div style="padding: 26px 22px 0">
+          <div style="background: #F6EDE0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <img src="assets/portrait.png" alt="" style="width: 34px; height: 34px; display: block">
+              <div style="font-family: Marcellus; font-size: 17px">Amake Fe's thoughts</div>
+            </div>
+            <div style="font-family: Lora, Georgia, serif; font-size: 15px; line-height: 1.75; color: #4A3A44">{{ story.thoughts }}</div>
+          </div>
+        </div>
+
+        <div style="padding: 22px 22px 0; display: flex; gap: 10px">
+          <button onClick="{{ prevPart }}" style="flex: 1; font-family: Karla; font-weight: 600; font-size: 14px; color: #5B4B41; background: none; border: 1px solid #DCCDB8; border-radius: 999px; padding: 13px; cursor: pointer">← Previous</button>
+          <button onClick="{{ nextPart }}" style="flex: 1; font-family: Karla; font-weight: 600; font-size: 14px; color: #F6EDE0; background: #2E1F2B; border: none; border-radius: 999px; padding: 13px; cursor: pointer">{{ nextLabel }}</button>
+        </div>
+
+        <div style="padding: 22px 22px 0; display: flex; gap: 22px; align-items: center; border-top: 1px solid #F0E7DA; margin-top: 22px; padding-top: 16px">
+          <div onClick="{{ like }}" style="cursor: pointer; font-size: 14px; color: #5B4B41">♥ {{ likeCount }}</div>
+          <div style="font-size: 14px; color: #5B4B41">💬 86</div>
+          <div style="font-size: 14px; color: #5B4B41">↗ Share</div>
+        </div>
+
+        <div style="padding: 24px 22px 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="font-family: Marcellus; font-size: 19px">Related stories</div>
+          <sc-for list="{{ related }}" as="r" hint-placeholder-count="2">
+            <div onClick="{{ r.open }}" style="cursor: pointer; padding: 13px 0; border-top: 1px solid #F0E7DA; display: flex; flex-direction: column; gap: 4px">
+              <div style="font-family: Marcellus; font-size: 16px">{{ r.title }}</div>
+              <div style="font-size: 12px; color: #8A7767">{{ r.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="stories" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isStories }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 14px">
+          <div style="font-family: Marcellus; font-size: 27px">Stories</div>
+          <div style="display: flex; align-items: center; gap: 10px; background: #F6EDE0; border-radius: 12px; padding: 12px 14px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A7767" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+            <span style="font-size: 14px; color: #8A7767">Search stories, topics, people…</span>
+          </div>
+          <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px">
+            <sc-for list="{{ categories }}" as="c" hint-placeholder-count="6">
+              <div onClick="{{ c.select }}" style="flex: none; font-size: 13px; padding: 8px 15px; border-radius: 999px; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }}; cursor: pointer">{{ c.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="padding: 8px 20px 0; display: flex; flex-direction: column">
+          <sc-for list="{{ filtered }}" as="s" hint-placeholder-count="5">
+            <div onClick="{{ s.open }}" style="cursor: pointer; padding: 16px 0; border-bottom: 1px solid #F0E7DA; display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; gap: 8px; align-items: center">
+                <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #C05E3C">{{ s.category }}</span>
+                <span style="font-size: 11px; color: #A89684">{{ s.parts }}</span>
+              </div>
+              <div style="font-family: Marcellus; font-size: 19px; line-height: 1.25">{{ s.title }}</div>
+              <div style="font-family: Lora, Georgia, serif; font-size: 14px; line-height: 1.6; color: #6B5A50">{{ s.summary }}</div>
+              <div style="font-size: 12px; color: #8A7767">{{ s.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="stories" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCommunity }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 16px">
+          <div style="font-family: Marcellus; font-size: 27px">Community</div>
+
+          <div style="border: 1px solid #E6DACA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; background: #FBF6EE">
+            <div style="display: flex; align-items: center; gap: 10px">
+              <img src="assets/portrait.png" alt="" style="width: 32px; height: 32px; display: block">
+              <div style="display: flex; flex-direction: column">
+                <div style="font-size: 14px; font-weight: 600">Amake Fe</div>
+                <div style="font-size: 11px; color: #8A7767">Creator post · 2 hours ago</div>
+              </div>
+            </div>
+            <div style="font-family: Lora, Georgia, serif; font-size: 15px; line-height: 1.7; color: #33272F">Part 4 of "The Number I Kept Calling" comes tomorrow evening. Before you read it, I want to say something about what happens when a woman finally asks the question she has been avoiding.</div>
+            <div style="display: flex; gap: 18px; font-size: 13px; color: #8A7767">♥ 1,204 · 💬 231</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px">
+            <div style="font-family: Marcellus; font-size: 19px">Questions this week</div>
+            <sc-for list="{{ questions }}" as="q" hint-placeholder-count="3">
+              <div style="border: 1px solid #E6DACA; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px">
+                <div style="font-family: Marcellus; font-size: 17px; line-height: 1.3">{{ q.text }}</div>
+                <div style="font-size: 12px; color: #8A7767">{{ q.answers }} answers</div>
+                <div style="font-family: Lora, Georgia, serif; font-size: 14px; line-height: 1.65; color: #4A3A44; border-left: 2px solid #E0A43B; padding-left: 12px">{{ q.top }}</div>
+                <div style="font-size: 12px; color: #C05E3C; cursor: pointer">Add your answer</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="border: 1px solid #E6DACA; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+            <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #8A7767">Poll · 2,310 votes</div>
+            <div style="font-family: Marcellus; font-size: 19px; line-height: 1.3">Should couples keep separate bank accounts?</div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <sc-for list="{{ pollOptions }}" as="o" hint-placeholder-count="3">
+                <div onClick="{{ o.vote }}" style="position: relative; overflow: hidden; border: 1px solid #E6DACA; border-radius: 10px; padding: 11px 14px; cursor: pointer; display: flex; justify-content: space-between; font-size: 14px">
+                  <div style="position: absolute; left: 0; top: 0; bottom: 0; background: #F6EDE0; width: {{ o.barWidth }}"></div>
+                  <span style="position: relative; font-weight: 500">{{ o.label }}</span>
+                  <span style="position: relative; color: #8A7767">{{ o.pct }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="community" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isAsk }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 16px">
+          <div style="font-family: Marcellus; font-size: 27px">Ask Her</div>
+          <div style="font-family: Lora, Georgia, serif; font-size: 15px; line-height: 1.7; color: #5B4B41">Ask a question about marriage, family or life. She reads every one and answers a few each week. You stay anonymous.</div>
+          <div style="border: 1px solid #DCCDB8; border-radius: 14px; padding: 16px; background: #FBF6EE; display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: Lora, Georgia, serif; font-size: 15px; color: #A89684; min-height: 76px; line-height: 1.6">Type your question…</div>
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div style="font-size: 12px; color: #8A7767">Posted as Anonymous</div>
+              <button style="font-family: Karla; font-weight: 600; font-size: 14px; color: #F6EDE0; background: #2E1F2B; border: none; border-radius: 999px; padding: 11px 20px; cursor: pointer">Send question</button>
+            </div>
+          </div>
+          <div style="font-family: Marcellus; font-size: 19px; margin-top: 4px">Recently answered</div>
+          <sc-for list="{{ answered }}" as="a" hint-placeholder-count="3">
+            <div style="border-top: 1px solid #F0E7DA; padding: 14px 0; display: flex; flex-direction: column; gap: 7px">
+              <div style="font-family: Marcellus; font-size: 17px; line-height: 1.3">{{ a.q }}</div>
+              <div style="font-family: Lora, Georgia, serif; font-size: 14.5px; line-height: 1.7; color: #4A3A44">{{ a.a }}</div>
+              <div style="font-size: 12px; color: #8A7767">{{ a.when }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="ask" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isShare }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #2E1F2B; display: flex; flex-direction: column">
+        <div style="padding: 60px 22px 0">
+          <div onClick="{{ goHome }}" style="cursor: pointer; font-size: 14px; color: #C9B6A4">← Close</div>
+        </div>
+        <div style="padding: 34px 22px 0; display: flex; flex-direction: column; gap: 14px">
+          <div style="font-family: Marcellus; font-size: 32px; line-height: 1.15; color: #F6EDE0">Your story matters.</div>
+          <div style="font-family: Lora, Georgia, serif; font-size: 16px; line-height: 1.75; color: #D9C7B6">You don't have to type it. Call her, or send a voice note in the language you are most comfortable in. She listens first, asks questions, and writes the story with you — and nothing is published until you agree to it.</div>
+        </div>
+        <div style="padding: 28px 22px 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: center; gap: 14px; background: #E0A43B; border-radius: 14px; padding: 17px 20px; cursor: pointer">
+            <span style="font-size: 20px">📞</span>
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Karla; font-weight: 700; font-size: 16px; color: #2E1F2B">Call her</div>
+              <div style="font-size: 13px; color: #6B4A18">+260 97 000 0000</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; background: #C05E3C; border-radius: 14px; padding: 17px 20px; cursor: pointer">
+            <span style="font-size: 20px">💬</span>
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Karla; font-weight: 700; font-size: 16px; color: #FFF6EA">WhatsApp</div>
+              <div style="font-size: 13px; color: #FFE0CC">Chat or send a voice note</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 14px; border: 1px solid rgba(246,237,224,0.3); border-radius: 14px; padding: 17px 20px; cursor: pointer">
+            <span style="font-size: 20px">🎙</span>
+            <div style="display: flex; flex-direction: column">
+              <div style="font-family: Karla; font-weight: 700; font-size: 16px; color: #F6EDE0">Record a voice note here</div>
+              <div style="font-size: 13px; color: #A89684">English, Bemba, Nyanja, Tonga or Lozi</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding: 26px 22px 0">
+          <div style="border-top: 1px solid rgba(246,237,224,0.18); padding-top: 18px; display: flex; flex-direction: column; gap: 8px">
+            <div style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: #E0A43B">How your privacy works</div>
+            <div style="font-size: 13.5px; line-height: 1.7; color: #C9B6A4">Your name and number are never published. Names, places and details that could identify you are changed. You confirm consent before publishing, and you can ask for the story to be withdrawn at any point before it goes out.</div>
+          </div>
+        </div>
+        <div style="height: 60px"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSupport }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 22px 0">
+          <div onClick="{{ goHome }}" style="cursor: pointer; font-size: 14px; color: #5B4B41">← Back</div>
+        </div>
+        <div style="padding: 26px 22px 0; display: flex; flex-direction: column; gap: 12px">
+          <div style="font-family: Marcellus; font-size: 30px; line-height: 1.15">Support the Community</div>
+          <div style="font-family: Lora, Georgia, serif; font-size: 15.5px; line-height: 1.75; color: #5B4B41">If these stories, conversations and advice have helped you, you can support the work behind the community. Every story stays free to read.</div>
+        </div>
+        <div style="padding: 24px 22px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <sc-for list="{{ amounts }}" as="a" hint-placeholder-count="4">
+            <div onClick="{{ a.select }}" style="border: 1.5px solid {{ a.border }}; background: {{ a.bg }}; color: {{ a.color }}; border-radius: 12px; padding: 16px; text-align: center; font-family: Marcellus; font-size: 20px; cursor: pointer">{{ a.label }}</div>
+          </sc-for>
+        </div>
+        <div style="padding: 14px 22px 0">
+          <div onClick="{{ toggleMonthly }}" style="display: flex; align-items: center; gap: 12px; border: 1px solid #E6DACA; border-radius: 12px; padding: 15px; cursor: pointer">
+            <div style="width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid {{ monthlyBorder }}; background: {{ monthlyBg }}; display: flex; align-items: center; justify-content: center; color: #FFF6EA; font-size: 12px">{{ monthlyMark }}</div>
+            <div style="font-size: 14.5px">Make this a monthly contribution</div>
+          </div>
+        </div>
+        <div style="padding: 18px 22px 0">
+          <button style="width: 100%; font-family: Karla; font-weight: 700; font-size: 16px; color: #FFF6EA; background: #C05E3C; border: none; border-radius: 999px; padding: 16px; cursor: pointer">{{ supportCta }}</button>
+          <div style="text-align: center; font-size: 12px; color: #8A7767; padding-top: 12px">Airtel Money · MTN MoMo · Zamtel Kwacha · Card</div>
+        </div>
+        <div style="padding: 26px 22px 0">
+          <div style="background: #F6EDE0; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 6px">
+            <div style="font-family: Marcellus; font-size: 18px">1,842 people support this community</div>
+            <div style="font-size: 13.5px; line-height: 1.6; color: #5B4B41">Their support pays for the phone calls, the data, the editing, and keeps every story free.</div>
+          </div>
+        </div>
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="home" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; background: #FFFDF9; display: flex; flex-direction: column">
+        <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <div style="width: 62px; height: 62px; border-radius: 50%; background: #F6EDE0; display: flex; align-items: center; justify-content: center; font-family: Marcellus; font-size: 24px; color: #C05E3C">C</div>
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <div style="font-family: Marcellus; font-size: 22px">Chanda M.</div>
+              <div style="font-size: 12.5px; color: #8A7767">Member since March 2026 · Reading as a pseudonym</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px">
+            <div style="flex: 1; border: 1px solid #E6DACA; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 3px">
+              <div style="font-family: Marcellus; font-size: 22px">37</div>
+              <div style="font-size: 11.5px; color: #8A7767">Stories read</div>
+            </div>
+            <div style="flex: 1; border: 1px solid #E6DACA; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 3px">
+              <div style="font-family: Marcellus; font-size: 22px">9</div>
+              <div style="font-size: 11.5px; color: #8A7767">Saved</div>
+            </div>
+            <div style="flex: 1; border: 1px solid #E6DACA; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 3px">
+              <div style="font-family: Marcellus; font-size: 22px">4</div>
+              <div style="font-size: 11.5px; color: #8A7767">Topics</div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div style="font-family: Marcellus; font-size: 19px">My topics</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <sc-for list="{{ topics }}" as="t" hint-placeholder-count="4">
+                <div style="font-size: 13px; padding: 8px 14px; border-radius: 999px; background: #F6EDE0; color: #5B4B41">{{ t.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="font-family: Marcellus; font-size: 19px; padding-bottom: 6px">Saved stories</div>
+            <sc-for list="{{ saved }}" as="s" hint-placeholder-count="3">
+              <div onClick="{{ s.open }}" style="cursor: pointer; padding: 13px 0; border-top: 1px solid #F0E7DA; display: flex; flex-direction: column; gap: 4px">
+                <div style="font-family: Marcellus; font-size: 16.5px">{{ s.title }}</div>
+                <div style="font-size: 12px; color: #8A7767">{{ s.meta }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px; padding-top: 6px">
+            <sc-for list="{{ settings }}" as="x" hint-placeholder-count="4">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 15px 0; border-top: 1px solid #F0E7DA; font-size: 14.5px; cursor: pointer">
+                <span>{{ x.label }}</span>
+                <span style="color: #A89684">›</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="height: 110px"></div>
+        <dc-import name="ReaderTabs" style="position: sticky; bottom: 0; z-index: 10" tab="profile" on-select="{{ setTab }}" hint-size="100%,84px"></dc-import>
+      </div>
+    </sc-if>
+
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STORIES = [
+  {
+    id: 'number', title: 'The Number I Kept Calling', category: 'Trust', author: 'Anonymous Wife',
+    date: '18 September 2026', readTime: '7 min', partCount: 5, parts: '5 parts',
+    summary: 'A wife finds a number she does not recognise, and spends three weeks deciding whether to dial it.',
+    paragraphs: [
+      'The number was saved under a name that meant nothing to me. Not a woman\u2019s name. Not a name at all, really \u2014 two letters and a full stop.',
+      'I want to be honest about what I did next, because I have read enough of these stories to know that we all pretend we were calmer than we were. I did not confront him. I wrote the number on the back of a receipt and put the receipt in my handbag, and for three weeks I carried it around Lusaka like a stone in my shoe.',
+      'I called it for the first time on a Tuesday, from the car park at work. It rang four times and I ended the call. The next day I called again and a woman answered. I said nothing. She said hello twice, and then, "Bwanji?" and I put the phone down and sat with my hands on the steering wheel for a long time.',
+      'What I have not told anyone until now is that part of me did not want to know. Our marriage was eleven years old. We had built something \u2014 two children, a house that was still being finished one room at a time, a Sunday routine. Knowing would mean choosing, and I was not ready to choose.',
+      'When I finally asked him, I did not ask the question I had been rehearsing. I asked him something smaller. I asked him if he was happy.'
+    ],
+    thoughts: 'What she is describing is not weakness. It is the long pause many women take before they ask a question they cannot unask. I asked her, in our third call, what she was protecting during those three weeks. She said: the version of him I still loved. That is worth sitting with before we judge anyone for waiting.'
+  },
+  {
+    id: 'money', title: 'The Money We Never Talked About', category: 'Money', author: 'Anonymous Wife',
+    date: '11 September 2026', readTime: '6 min', partCount: 4, parts: '4 parts',
+    summary: 'Two salaries, one household, and a silence about money that lasted six years.',
+    paragraphs: [
+      'We were married for six years before either of us said out loud how much we earned.',
+      'It started as politeness. In my family, money was not discussed at the table. In his family, it was discussed constantly and loudly, and he hated it. So we agreed without ever agreeing: he paid the rent and the school fees, I paid for food, and everything else was handled by whoever noticed it first.',
+      'The problem with a system like that is that it works until it doesn\u2019t. When his contract ended, we had no idea what we had between us, because we had never put the two halves together.',
+      'The first time we sat down with a notebook and wrote everything down, I cried. Not because the number was bad. Because it took us six years to look at it together.'
+    ],
+    thoughts: 'Money silence is rarely about money. It is usually about what we were taught money means \u2014 control, shame, respect, or love. When couples tell me they "just never discussed it", I ask them what they were each afraid the conversation would reveal.'
+  },
+  {
+    id: 'inlaws', title: 'My Mother-in-Law Moved In For Three Months', category: 'In-Laws', author: 'Anonymous Wife',
+    date: '4 September 2026', readTime: '5 min', partCount: 3, parts: '3 parts',
+    summary: 'She came to help after the baby. She stayed, and the house slowly stopped being mine.',
+    paragraphs: [
+      'She arrived two days after I came home from the hospital, with three bags and a plan.',
+      'For the first two weeks I was grateful in a way I could not explain. I had a baby who would not sleep and a body that did not feel like mine, and there was a woman in my kitchen who knew what she was doing.',
+      'By the sixth week I had stopped cooking in my own house. By the tenth I was asking permission to move a chair.',
+      'My husband did not see it. That was the hardest part \u2014 not what she did, but that he could not see it happening.'
+    ],
+    thoughts: 'Help and authority are not the same thing, and in many of our homes they arrive in the same person. The question I put to her husband, when he eventually joined one of our calls, was simple: who does your wife go to when she needs something in her own house?'
+  },
+  {
+    id: 'back', title: 'He Came Back After Two Years', category: 'Reconciliation', author: 'Anonymous Husband',
+    date: '28 August 2026', readTime: '8 min', partCount: 4, parts: '4 parts',
+    summary: 'A man writes about the marriage he left, and the wife who did not wait for him the way he expected.',
+    paragraphs: [
+      'I left in 2023. I am not going to tell the story in a way that makes me look better than I was.',
+      'When I came back I expected one of two things: a closed door, or a crying woman. What I got was a polite woman who offered me tea and asked me how long I was staying.',
+      'She had rebuilt the house around my absence. The children had a routine I did not know. There was a shelf where my things used to be.',
+      'Reconciliation, I have learned, is not returning to what was. It is asking to be let into something that carried on without you.'
+    ],
+    thoughts: 'I publish very few stories from men, not because they are not sent to me, but because most are not ready to be told without blame. This one arrived after four long phone calls, and what changed was that he stopped explaining and started remembering.'
+  },
+  {
+    id: 'twins', title: 'Nothing Prepared Me For Twins', category: 'Parenting', author: 'Anonymous Mother',
+    date: '21 August 2026', readTime: '5 min', partCount: 2, parts: '2 parts',
+    summary: 'On the first year with two babies, a husband on night shift, and a version of herself she had to let go of.',
+    paragraphs: [
+      'People kept saying "double blessing" and I kept smiling and thinking: you have no idea.',
+      'My husband worked nights. From seven in the evening until six in the morning, it was me and two babies and a paraffin lamp for when the power went.',
+      'I want to say something to the women who are in that year right now: the person you were before is not gone. She is just standing outside the door waiting for you to have a free hand.'
+    ],
+    thoughts: 'She asked me to publish this one quickly, because she wanted someone in the middle of that year to read it this week. That is often why people call me \u2014 not to be heard, but to reach the person three steps behind them.'
+  },
+  {
+    id: 'father', title: 'We Married Without Telling My Father', category: 'Family', author: 'Anonymous Sister',
+    date: '14 August 2026', readTime: '6 min', partCount: 3, parts: '3 parts',
+    summary: 'A quiet civil ceremony, a family that found out later, and four years of repair.',
+    paragraphs: [
+      'We signed the papers on a Thursday morning with two witnesses we barely knew.',
+      'My father heard about it from a cousin. I have never been able to forget the way he said my name on the phone that evening.',
+      'It took four years, one funeral and one grandchild before we sat in the same room comfortably again.'
+    ],
+    thoughts: 'Elopement stories in our community are rarely about romance. They are almost always about a family decision that someone felt they could not survive. Repair is possible, but it is slower than people expect.'
+  }
+];
+
+const CATEGORIES = ['All', 'Marriage', 'Trust', 'Money', 'In-Laws', 'Parenting', 'Family', 'Reconciliation'];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'home', storyId: 'number', part: 3, saved: false, likes: 2413,
+    vote: null, category: 'All', amount: 25, monthly: false
+  };
+
+  go = (screen) => this.setState({ screen });
+  open = (id) => this.setState({ screen: 'story', storyId: id, part: 1, saved: false });
+
+  renderVals() {
+    const s = this.state;
+    const story = STORIES.find(x => x.id === s.storyId) || STORIES[0];
+    const votes = [
+      { label: 'Yes, always', base: 46 },
+      { label: 'No, everything shared', base: 31 },
+      { label: 'Depends on the couple', base: 23 }
+    ];
+    const pollOptions = votes.map((v, i) => {
+      const pct = s.vote === null ? v.base : (s.vote === i ? v.base + 4 : Math.max(0, v.base - 2));
+      return {
+        label: v.label, pct: pct + '%', barWidth: pct + '%',
+        vote: () => this.setState({ vote: i })
+      };
+    });
+    const card = (x) => ({
+      title: x.title, category: x.category, parts: x.parts, summary: x.summary,
+      initial: x.title.replace(/^(The|A|My|We|He|Nothing)\s+/, '').charAt(0),
+      meta: x.category + ' · ' + x.author + ' · ' + x.parts,
+      open: () => this.open(x.id)
+    });
+    const filtered = (s.category === 'All' ? STORIES : STORIES.filter(x => x.category === s.category)).map(card);
+
+    return {
+      jumps: [
+        ['Home', 'home'], ['Story reader', 'story'], ['Stories', 'stories'], ['Community', 'community'],
+        ['Ask Her', 'ask'], ['Share your story', 'share'], ['Support', 'support'], ['Profile', 'profile']
+      ].map(([label, key]) => ({ label, go: () => this.go(key) })),
+
+      isHome: s.screen === 'home', isStory: s.screen === 'story', isStories: s.screen === 'stories',
+      isCommunity: s.screen === 'community', isAsk: s.screen === 'ask', isShare: s.screen === 'share',
+      isSupport: s.screen === 'support', isProfile: s.screen === 'profile',
+      darkScreen: s.screen === 'share',
+
+      goHome: () => this.go('home'), goStories: () => this.go('stories'), goCommunity: () => this.go('community'),
+      goSupport: () => this.go('support'), goShare: () => this.go('share'), goNotifications: () => this.go('profile'),
+      goBack: () => this.go('stories'),
+      openFeatured: () => this.setState({ screen: 'story', storyId: 'number', part: 3 }),
+      setTab: (tab) => this.go(tab),
+
+      latest: STORIES.slice(1, 4).map(card),
+      filtered,
+      categories: CATEGORIES.map(c => ({
+        label: c,
+        border: s.category === c ? '#2E1F2B' : '#E6DACA',
+        bg: s.category === c ? '#2E1F2B' : 'transparent',
+        color: s.category === c ? '#F6EDE0' : '#5B4B41',
+        select: () => this.setState({ category: c })
+      })),
+
+      story,
+      storyParagraphs: story.paragraphs.map(text => ({ text })),
+      partLabel: 'Part ' + Math.min(s.part, story.partCount) + ' of ' + story.partCount,
+      partProgress: Math.round(100 * Math.min(s.part, story.partCount) / story.partCount) + '%',
+      nextLabel: s.part >= story.partCount ? 'Finish' : 'Next part →',
+      prevPart: () => this.setState({ part: Math.max(1, s.part - 1) }),
+      nextPart: () => this.setState({ part: Math.min(story.partCount, s.part + 1) }),
+      saveLabel: s.saved ? 'Saved' : 'Save',
+      saveColor: s.saved ? '#C05E3C' : '#5B4B41',
+      toggleSave: () => this.setState({ saved: !s.saved }),
+      like: () => this.setState({ likes: s.likes + 1 }),
+      likeCount: s.likes.toLocaleString(),
+      related: STORIES.filter(x => x.id !== story.id).slice(0, 2).map(card),
+
+      questions: [
+        { text: 'What is one thing you wish you knew before getting married?', answers: 289, top: '"That love and compatibility are two different projects, and only one of them is finished on the wedding day."' },
+        { text: 'Can trust be rebuilt after cheating?', answers: 412, top: '"It can, but not by the person who was hurt. They can only allow it. The rebuilding is the other one\u2019s work, daily, for years."' },
+        { text: 'Should a wife know her husband\u2019s salary?', answers: 176, top: '"We both know. What took longer was agreeing on what the money was for."' }
+      ],
+      answered: [
+        { q: 'My husband\u2019s family calls every problem "just marriage". How do I know what is normal?', a: 'Normal is a word families use to end a conversation. Ask yourself a better question: can you say what is wrong out loud, to him, without being punished for it? That is the line.', when: 'Answered 2 days ago' },
+        { q: 'Is it wrong to keep some savings he does not know about?', a: 'Not wrong. But ask yourself what the savings are for. Security is one answer. An exit is another. Both are valid, and they need different conversations.', when: 'Answered 5 days ago' },
+        { q: 'We have not spoken properly in two months. Where do I start?', a: 'Start with something small and true, not something big and fair. Fairness is a longer conversation and it will not survive two months of silence.', when: 'Answered last week' }
+      ],
+
+      amounts: ['ZMW 10', 'ZMW 25', 'ZMW 50', 'ZMW 100', 'ZMW 250', 'Custom'].map(label => {
+        const val = parseInt(label.replace(/\D/g, ''), 10) || 0;
+        const active = s.amount === val;
+        return {
+          label,
+          border: active ? '#C05E3C' : '#E6DACA',
+          bg: active ? '#FAEDE3' : 'transparent',
+          color: active ? '#C05E3C' : '#2E1F2B',
+          select: () => this.setState({ amount: val })
+        };
+      }),
+      monthlyMark: s.monthly ? '✓' : '',
+      monthlyBorder: s.monthly ? '#C05E3C' : '#DCCDB8',
+      monthlyBg: s.monthly ? '#C05E3C' : 'transparent',
+      toggleMonthly: () => this.setState({ monthly: !s.monthly }),
+      supportCta: (s.amount ? 'Support with ZMW ' + s.amount : 'Choose an amount') + (s.monthly ? ' monthly' : ''),
+
+      topics: ['Marriage', 'Trust', 'Money', 'Parenting'].map(label => ({ label })),
+      saved: STORIES.slice(0, 3).map(card),
+      settings: [
+        { label: 'Notifications' }, { label: 'Reading preferences' },
+        { label: 'Privacy and blocked members' }, { label: 'Support history' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

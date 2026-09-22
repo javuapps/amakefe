@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+@import '@amakefe/core/fonts.css';
+@import '@amakefe/core/tokens.css';
+
+/* Tailwind auto-detects sources under this app only, and skips node_modules —
+   where the workspace link to @amakefe/ui lives. Without this, any class used
+   *only* in a shared component is silently absent from the build: story prose
+   lost its paragraph spacing, its pull-quote rule and its figure margins, and
+   nothing failed. Classes that happened to also appear in app source survived,
+   which is what made it look like a rendering quirk rather than missing CSS. */
+@source '../../packages/ui/src';

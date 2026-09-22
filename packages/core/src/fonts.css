@@ -1,0 +1,38 @@
+/* Self-hosted rather than loaded from Google's CDN: the audience is on mobile
+ * data, and text must not wait on a third-party font server. These are the latin
+ * woff2 subsets — 99KB for all four faces. Karla and Lora are variable fonts, so
+ * one file covers the whole weight range.
+ *
+ * font-display: swap so prose is readable immediately in the fallback. */
+
+@font-face {
+  font-family: "Marcellus";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/marcellus-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../fonts/karla-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../fonts/lora-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Lora";
+  font-style: italic;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../fonts/lora-italic-latin.woff2") format("woff2");
+}
