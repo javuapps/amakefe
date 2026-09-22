@@ -24,6 +24,32 @@ const queryClient = new QueryClient({
   },
 })
 
+/**
+ * When a screen throws.
+ *
+ * Without this react-router shows its own developer page — a stack trace and a
+ * note addressed to whoever built the app — which is not something to put in
+ * front of someone reading about their marriage. Reloading is the honest
+ * remedy: the cache is in memory, so it clears with the page.
+ */
+function Crashed() {
+  return (
+    <div className="mx-auto flex min-h-dvh w-full max-w-[520px] flex-col justify-center gap-4 px-6 text-center">
+      <h1 className="font-display text-[24px] leading-snug text-ink">Something went wrong</h1>
+      <p className="prose-story text-[15px] text-body">
+        That is on us, not on you. Reloading usually sorts it.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="mx-auto rounded-full bg-ink px-6 py-3 text-sm font-semibold text-surface-warm"
+      >
+        Reload
+      </button>
+    </div>
+  )
+}
+
 function Shell() {
   return (
     // The reader is a phone-width column, centred on anything wider.
@@ -45,6 +71,7 @@ function Shell() {
 const router = createBrowserRouter([
   {
     element: <Shell />,
+    errorElement: <Crashed />,
     children: [
       { path: '/', element: <HomeScreen /> },
       {
@@ -64,10 +91,6 @@ const router = createBrowserRouter([
       {
         path: '/community',
         lazy: async () => ({ Component: (await import('./screens/CommunityScreen')).CommunityScreen }),
-      },
-      {
-        path: '/ask',
-        lazy: async () => ({ Component: (await import('./screens/AskScreen')).AskScreen }),
       },
       {
         path: '/support',
@@ -99,6 +122,7 @@ const router = createBrowserRouter([
     // Share Your Story is a full-screen dark take-over with no tab bar, as the
     // prototype has it — it is a moment, not a destination.
     path: '/share',
+    errorElement: <Crashed />,
     lazy: async () => ({ Component: (await import('./screens/ShareScreen')).ShareScreen }),
   },
 ])

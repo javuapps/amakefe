@@ -166,6 +166,26 @@ button:disabled,
   background-color: var(--color-muted);
 }
 
+/* A row that scrolls sideways and shows nothing for it.
+ *
+ * The chips above the story list run off the edge of a phone and are dragged;
+ * a horizontal scrollbar under them reads as a broken layout rather than as an
+ * affordance, because the overflowing chip is already the affordance.
+ *
+ * `scrollbar-width: none` alone is not enough — Firefox honours it and Chrome
+ * and Safari ignore it, so the bar survives on the browsers most of this
+ * audience uses. The `::-webkit-scrollbar` rule is the half that does the work
+ * there, and it has to be more specific than the global one above. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* A textarea that has outgrown its rows draws its own scrollbar, which reads as
  * clutter next to the page's. These grow to fit what is in them instead.
  * field-sizing is Chromium-only for now; elsewhere the rows attribute still
@@ -211,10 +231,33 @@ textarea.auto-grow {
   will-change: transform;
 }
 
+/* The one spinner in the product, and it is not a loading indicator.
+ *
+ * Loading is a quiet skeleton everywhere else, because the design is a printed
+ * page and a page does not throb while it arrives. This is a different thing:
+ * the wait for a mobile money prompt to be approved on a handset that is not
+ * in the room. There is no content shape to skeleton, and static text reads as
+ * frozen — someone who thinks a payment has stalled pays a second time. Motion
+ * is the only honest way to say "still going". */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
 /* Someone who has asked for less motion gets the panel, not the journey. */
 @media (prefers-reduced-motion: reduce) {
   .drawer-scrim,
   .drawer-panel {
     animation: none;
+  }
+  /* The spinner slows rather than stopping. Stopped, it is indistinguishable
+     from a payment that has hung, which is the one thing it exists to rule
+     out — so this trades the motion down instead of away. */
+  .spinner {
+    animation-duration: 2.4s;
   }
 }

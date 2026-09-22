@@ -3,13 +3,11 @@ import { canonicalPath, isSeries, resumePoint, type StoryCard } from '@amakefe/c
 import { Async, Pill, SectionLabel } from '../components/primitives'
 import { StoryRow } from '../components/StoryRow'
 import { Mark } from '../components/Mark'
-import { PollCard } from '../components/PollCard'
-import { QuestionCard } from '../components/QuestionCard'
+import { PostCard } from '../components/PostCard'
 import {
-  useActivePoll,
+  useCommunityFeed,
   useContinueReading,
   useLatestStories,
-  useQuestions,
 } from '../hooks/queries'
 
 export function HomeScreen() {
@@ -44,8 +42,7 @@ export function HomeScreen() {
         </Async>
       </div>
 
-      <CommunityQuestion />
-      <ActivePoll />
+      <LatestFromCommunity />
       <SupportCard />
       <ShareCta />
     </div>
@@ -110,25 +107,21 @@ function ReadingCard({ fallback }: { fallback: StoryCard }) {
   )
 }
 
-function CommunityQuestion() {
-  const questions = useQuestions()
-  const question = questions.data?.[0]
-  if (!question) return null
+/**
+ * The newest thing from the community, whatever kind it is.
+ *
+ * Home used to fetch a question and a poll separately and show both. There is
+ * one timeline now, so this takes the top of it — and a notice or an answered
+ * question is as likely to be worth seeing as a poll.
+ */
+function LatestFromCommunity() {
+  const feed = useCommunityFeed()
+  const post = feed.data?.pages[0]?.items[0]
+  if (!post) return null
 
   return (
     <section className="px-5 pt-6">
-      <QuestionCard question={question} />
-    </section>
-  )
-}
-
-function ActivePoll() {
-  const poll = useActivePoll()
-  if (!poll.data) return null
-
-  return (
-    <section className="px-5 pt-4">
-      <PollCard poll={poll.data} />
+      <PostCard post={post} />
     </section>
   )
 }

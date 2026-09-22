@@ -107,10 +107,3 @@ export async function toggleCategoryFollow(db: Db, categorySlug: string): Promis
   if (error) throw error
   return true
 }
-
-/** How many people support the community — the only figure sup_ exposes publicly. */
-export async function fetchSupporterCount(db: Db): Promise<number> {
-  const { data, error } = await db.rpc('sup_supporter_count')
-  if (error) throw error
-  return data ?? 0
-}

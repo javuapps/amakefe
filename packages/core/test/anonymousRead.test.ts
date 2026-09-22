@@ -21,7 +21,7 @@ describe('anonymous reading', { retry: 2 }, () => {
     const { data } = await db.auth.getSession()
     expect(data.session).toBeNull()
 
-    const stories = await fetchFeed(db)
+    const { items: stories } = await fetchFeed(db)
     expect(stories.length).toBeGreaterThan(0)
     for (const story of stories) {
       expect(story.title).toBeTruthy()

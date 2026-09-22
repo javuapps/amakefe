@@ -1,28 +1,39 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import {
-  askQuestion,
-  castVote,
-  fetchActivePoll,
-  fetchAnsweredQuestions,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
+import {
   fetchCategories,
   fetchContinueReading,
+  askQuestion,
+  castVote,
+  fetchCommunityFeed,
   fetchFeed,
-  fetchLatestCreatorPost,
-  fetchQuestions,
+  fetchMyQuestions,
+  fetchPollDetail,
+  fetchPostComments,
+  fetchReactedPostIds,
+  postComment,
+  togglePostReaction,
   fetchRelated,
   fetchFollowedCategorySlugs,
   fetchReaderStats,
   fetchSavedIds,
   fetchSavedStories,
   fetchStory,
+  fetchCollectionStatus,
   fetchSupporterCount,
-  postAnswer,
   recordProgress,
   searchStories,
   setDisplayName,
+  startCollection,
   toggleCategoryFollow,
   toggleReaction,
   toggleSaved,
+  type CollectionRequest,
   type StoryCard,
 } from '@amakefe/core'
 import { db } from '../db'
@@ -33,38 +44,68 @@ import { db } from '../db'
  * what the query returns.
  */
 
+/**
+ * Cache keys.
+ *
+ * **An infinite query must never share a key with a plain one.** They cache
+ * different shapes — `InfiniteData<T>` against `T` — and whichever mounts
+ * second reads the other's data. `useLatestStories` and `useStoryList(null)`
+ * both used `['feed', null]`, so opening Home and then Stories crashed inside
+ * `getNextPageParam` reading `pages.length` off an array. Hence `latest`.
+ */
 export const keys = {
   categories: ['categories'] as const,
+  /** Paged. Only `useStoryList` may use this. */
   feed: (category: string | null) => ['feed', category] as const,
+  /** Home's short unpaged list, kept apart from the paged feed above. */
+  latest: ['latest'] as const,
   search: (term: string) => ['search', term] as const,
   story: (slug: string) => ['story', slug] as const,
   related: (id: string) => ['related', id] as const,
   savedIds: ['savedIds'] as const,
   continueReading: ['continueReading'] as const,
-  creatorPost: ['creatorPost'] as const,
-  questions: ['questions'] as const,
-  poll: ['poll'] as const,
-  answered: ['answered'] as const,
+  community: ['community'] as const,
+  myQuestions: ['my-questions'] as const,
+  reactedPosts: ['reactedPosts'] as const,
+  poll: (postId: string) => ['poll', postId] as const,
+  postComments: (postId: string) => ['postComments', postId] as const,
   readerStats: ['readerStats'] as const,
   savedStories: ['savedStories'] as const,
   followedCategories: ['followedCategories'] as const,
   supporterCount: ['supporterCount'] as const,
+  collection: (reference: string) => ['collection', reference] as const,
 }
 
 export const useCategories = () =>
   useQuery({ queryKey: keys.categories, queryFn: () => fetchCategories(db) })
 
 /** A search term wins over the category chip — someone who typed wants that. */
+/**
+ * The story list, a page at a time — searched or browsed by category.
+ *
+ * Both are the same shape, so switching between them does not change how the
+ * screen reads its results; only the key changes, which starts a fresh sequence
+ * rather than appending one list's pages to another's.
+ */
 export function useStoryList(category: string | null, term: string) {
-  const searching = term.trim().length >= 2
-  return useQuery({
-    queryKey: searching ? keys.search(term.trim()) : keys.feed(category),
-    queryFn: () => (searching ? searchStories(db, term.trim()) : fetchFeed(db, { categorySlug: category })),
+  const search = term.trim()
+  const searching = search.length >= 2
+  return useInfiniteQuery({
+    queryKey: searching ? keys.search(search) : keys.feed(category),
+    queryFn: ({ pageParam }) =>
+      searching
+        ? searchStories(db, search, { page: pageParam })
+        : fetchFeed(db, { categorySlug: category, page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => (last.hasMore ? pages.length : undefined),
   })
 }
 
 export const useLatestStories = () =>
-  useQuery({ queryKey: keys.feed(null), queryFn: () => fetchFeed(db, { limit: 8 }) })
+  useQuery({
+    queryKey: keys.latest,
+    queryFn: () => fetchFeed(db, { pageSize: 8 }).then((page) => page.items),
+  })
 
 export const useStory = (slug: string) =>
   useQuery({ queryKey: keys.story(slug), queryFn: () => fetchStory(db, slug) })
@@ -82,17 +123,68 @@ export const useSavedIds = () =>
 export const useContinueReading = () =>
   useQuery({ queryKey: keys.continueReading, queryFn: () => fetchContinueReading(db) })
 
-export const useCreatorPost = () =>
-  useQuery({ queryKey: keys.creatorPost, queryFn: () => fetchLatestCreatorPost(db) })
+/**
+ * The community timeline: questions she has answered, polls and notices, in
+ * publication order, a page at a time.
+ */
+export const useCommunityFeed = () =>
+  useInfiniteQuery({
+    queryKey: keys.community,
+    queryFn: ({ pageParam }) => fetchCommunityFeed(db, { page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (last, pages) => (last.hasMore ? pages.length : undefined),
+  })
 
-export const useQuestions = () =>
-  useQuery({ queryKey: keys.questions, queryFn: () => fetchQuestions(db) })
+export const useMyQuestions = () =>
+  useQuery({ queryKey: keys.myQuestions, queryFn: () => fetchMyQuestions(db) })
 
-export const useActivePoll = () =>
-  useQuery({ queryKey: keys.poll, queryFn: () => fetchActivePoll(db) })
+export const useReactedPosts = () =>
+  useQuery({ queryKey: keys.reactedPosts, queryFn: () => fetchReactedPostIds(db) })
 
-export const useAnsweredQuestions = () =>
-  useQuery({ queryKey: keys.answered, queryFn: () => fetchAnsweredQuestions(db) })
+export const usePollDetail = (postId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: keys.poll(postId),
+    queryFn: () => fetchPollDetail(db, postId),
+    enabled,
+  })
+
+export const usePostComments = (postId: string, enabled: boolean) =>
+  useQuery({
+    queryKey: keys.postComments(postId),
+    queryFn: () => fetchPostComments(db, postId),
+    enabled,
+  })
+
+export function useAskQuestion() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (body: string) => askQuestion(db, body),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.myQuestions }),
+  })
+}
+
+export function useTogglePostReaction() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: (postId: string) => togglePostReaction(db, postId),
+    onSuccess: () => {
+      client.invalidateQueries({ queryKey: keys.reactedPosts })
+      client.invalidateQueries({ queryKey: keys.community })
+    },
+  })
+}
+
+export function usePostComment() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ postId, body }: { postId: string; body: string }) =>
+      postComment(db, postId, body),
+    onSuccess: (_data, { postId }) => {
+      client.invalidateQueries({ queryKey: keys.postComments(postId) })
+      client.invalidateQueries({ queryKey: keys.community })
+    },
+  })
+}
 
 export function useToggleSaved() {
   const client = useQueryClient()
@@ -122,23 +214,14 @@ export function useRecordProgress() {
 export function useCastVote() {
   const client = useQueryClient()
   return useMutation({
-    mutationFn: ({ pollId, optionId }: { pollId: string; optionId: string }) =>
-      castVote(db, pollId, optionId),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.poll }),
+    mutationFn: ({ postId, optionId }: { postId: string; optionId: string }) =>
+      castVote(db, postId, optionId),
+    onSuccess: (_data, { postId }) => {
+      client.invalidateQueries({ queryKey: keys.poll(postId) })
+      client.invalidateQueries({ queryKey: keys.community })
+    },
   })
 }
-
-export function usePostAnswer() {
-  const client = useQueryClient()
-  return useMutation({
-    mutationFn: ({ questionId, body }: { questionId: string; body: string }) =>
-      postAnswer(db, questionId, body),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.questions }),
-  })
-}
-
-export const useAskQuestion = () =>
-  useMutation({ mutationFn: (body: string) => askQuestion(db, body) })
 
 export const useReaderStats = () =>
   useQuery({ queryKey: keys.readerStats, queryFn: () => fetchReaderStats(db) })
@@ -151,6 +234,37 @@ export const useFollowedCategories = () =>
 
 export const useSupporterCount = () =>
   useQuery({ queryKey: keys.supporterCount, queryFn: () => fetchSupporterCount(db) })
+
+/** Prompts the supporter's handset. Resolves with the reference to follow. */
+export const useStartCollection = () =>
+  useMutation({ mutationFn: (request: CollectionRequest) => startCollection(db, request) })
+
+/**
+ * Follows a payment until the network answers.
+ *
+ * Every three seconds while it is pending and not at all once it is not — the
+ * webhook usually lands first, but a handset left face-down on a table is the
+ * normal case here, so the screen has to keep asking.
+ */
+export function useCollectionStatus(reference: string | null) {
+  const client = useQueryClient()
+  const query = useQuery({
+    queryKey: keys.collection(reference ?? ''),
+    enabled: reference !== null,
+    queryFn: () => fetchCollectionStatus(db, reference!),
+    // Pure: it only decides whether to ask again. Anything else belongs in the
+    // effect below, which React runs after the render rather than during it.
+    refetchInterval: (q) => (q.state.data && q.state.data.status !== 'pending' ? false : 3000),
+  })
+
+  const settled = query.data?.status
+  useEffect(() => {
+    // A payment that went through changes the number above the button.
+    if (settled === 'successful') client.invalidateQueries({ queryKey: keys.supporterCount })
+  }, [settled, client])
+
+  return query
+}
 
 export function useToggleCategoryFollow() {
   const client = useQueryClient()

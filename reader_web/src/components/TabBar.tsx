@@ -17,7 +17,6 @@ const TABS = [
     label: 'Community',
     path: 'M17 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M10 10.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1.5a4 4 0 0 0-3-3.8M16 3.7a4 4 0 0 1 0 7.6',
   },
-  { to: '/ask', label: 'Ask Her', path: 'M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-8.5A8.4 8.4 0 1 1 21 11.5z' },
   {
     to: '/profile',
     label: 'Profile',

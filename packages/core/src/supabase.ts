@@ -78,7 +78,7 @@ export async function sendEmailCode(db: Db, email: string): Promise<void> {
     email: email.trim(),
     options: { shouldCreateUser: true },
   })
-  if (error) throw error
+  if (error) throw new Error(readableAuthError(error.message))
 }
 
 /** Exchanges the emailed code for a session. */
@@ -88,7 +88,35 @@ export async function verifyEmailCode(db: Db, email: string, code: string): Prom
     token: code.trim(),
     type: 'email',
   })
-  if (error) throw error
+  if (error) throw new Error(readableAuthError(error.message))
+}
+
+/**
+ * What a reader should be told when signing in fails.
+ *
+ * Supabase's own wording is written for whoever built the app, not for whoever
+ * is using it. "Error sending magic link email" is the message when the project
+ * has no SMTP configured — it names an internal mechanism, mentions a magic
+ * link when what was asked for is a code, and tells the reader nothing they can
+ * act on. The underlying text still reaches the console through the network
+ * tab; this is only what appears on the screen.
+ */
+function readableAuthError(message: string): string {
+  const text = message.toLowerCase()
+
+  if (text.includes('sending') || text.includes('smtp')) {
+    return 'We could not send the code just now. Please try again in a moment.'
+  }
+  if (text.includes('rate limit') || text.includes('for security purposes')) {
+    return 'That is a lot of tries. Wait a minute, then ask for another code.'
+  }
+  if (text.includes('expired') || text.includes('invalid') || text.includes('token')) {
+    return 'That code is wrong or has expired. Ask for a new one.'
+  }
+  if (text.includes('email') && text.includes('valid')) {
+    return 'That address does not look right.'
+  }
+  return 'That did not work. Please try again in a moment.'
 }
 
 export async function signOutReader(db: Db): Promise<void> {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Async } from '../components/primitives'
 import { StoryRow } from '../components/StoryRow'
 import { useCategories, useStoryList } from '../hooks/queries'
@@ -8,13 +8,40 @@ export function StoriesScreen() {
   const [term, setTerm] = useState('')
   const categories = useCategories()
   const stories = useStoryList(category, term)
+  const sentinel = useRef<HTMLDivElement | null>(null)
+
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = stories
+
+  // A marker at the end of the list rather than a scroll listener: it fires
+  // once per crossing and does not care what is doing the scrolling.
+  useEffect(() => {
+    const node = sentinel.current
+    if (!node || !hasNextPage) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting) && !isFetchingNextPage) {
+          void fetchNextPage()
+        }
+      },
+      // A screenful early, so the next page has usually arrived by the time the
+      // reader reaches it.
+      { rootMargin: '400px' },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <div className="flex flex-col pb-6">
       <div className="px-5 pt-[calc(16px+env(safe-area-inset-top,0px))]">
         <h1 className="font-display text-[26px] text-ink">Stories</h1>
+      </div>
 
-        <div className="relative mt-[14px]">
+      {/* Search and the category chips pin to the top; the title scrolls away
+       *  above them. Full-bleed background with matching padding, so the page
+       *  does not show through at the edges as rows slide underneath. */}
+      <div className="sticky top-0 z-10 bg-surface/95 px-5 pt-[10px] pb-2 backdrop-blur-sm">
+        <div className="relative">
           <svg
             className="absolute top-1/2 left-4 -translate-y-1/2 text-subtle"
             width="17" height="17" viewBox="0 0 24 24" fill="none"
@@ -42,7 +69,7 @@ export function StoriesScreen() {
           )}
         </div>
 
-        <div className="-mx-5 mt-[14px] flex gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none]">
+        <div className="no-scrollbar -mx-5 mt-[12px] flex gap-2 overflow-x-auto px-5 pb-1">
           {[{ slug: null, name: 'All' }, ...(categories.data ?? [])].map((item) => {
             const active = category === item.slug
             return (
@@ -65,8 +92,9 @@ export function StoriesScreen() {
 
       <div className="px-5 pt-1">
         <Async query={stories}>
-          {(list) =>
-            list.length === 0 ? (
+          {(data) => {
+            const list = data.pages.flatMap((page) => page.items)
+            return list.length === 0 ? (
               <p className="py-10 text-sm text-muted">
                 {term.trim().length >= 2
                   ? `Nothing matches “${term.trim()}” yet.`
@@ -77,9 +105,13 @@ export function StoriesScreen() {
                 {list.map((story) => (
                   <StoryRow key={story.id} story={story} />
                 ))}
+                <div ref={sentinel} aria-hidden />
+                {stories.isFetchingNextPage && (
+                  <p className="py-4 text-center text-xs text-muted">Loading more…</p>
+                )}
               </>
             )
-          }
+          }}
         </Async>
       </div>
     </div>

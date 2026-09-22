@@ -2,6 +2,7 @@ packages:
   - packages/*
   - reader_web
   - author_web
+  - operator_web
 
 allowBuilds:
   # esbuild ships a platform binary and needs its postinstall script.

@@ -2,16 +2,21 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { formatCount } from '@amakefe/core'
 import { useSupporterCount } from '../hooks/queries'
+import { SupportSheet } from '../components/SupportSheet'
 
 const AMOUNTS = [10, 25, 50, 100, 250] as const
+
+/** The floor the Edge Function enforces, so the screen can say so first. */
+const MIN_KWACHA = 5
 
 export function SupportScreen() {
   const [amount, setAmount] = useState<number | 'custom'>(25)
   const [custom, setCustom] = useState('')
-  const [monthly, setMonthly] = useState(false)
+  const [giving, setGiving] = useState<number | null>(null)
   const supporters = useSupporterCount()
 
   const chosen = amount === 'custom' ? Number(custom) || 0 : amount
+  const tooSmall = chosen < MIN_KWACHA
 
   return (
     <div className="flex flex-col px-[22px] pt-[calc(16px+env(safe-area-inset-top,0px))] pb-8">
@@ -55,36 +60,30 @@ export function SupportScreen() {
         />
       )}
 
-      <button
-        type="button"
-        onClick={() => setMonthly((on) => !on)}
-        className="mt-[14px] flex w-full items-center gap-3 rounded-xl border border-line-card p-[15px] text-left"
-      >
+      {/* Monthly giving stays on the screen and says why it cannot be taken.
+          Mobile money here is a one-off prompt to a handset; a standing order
+          needs a mandate none of the three networks offer us yet, and a
+          checkbox that quietly took one payment would be a lie on a receipt. */}
+      <div className="mt-[14px] flex w-full items-center gap-3 rounded-xl border border-line-card p-[15px]">
         <span
-          className={`flex size-5 items-center justify-center rounded-[5px] border-[1.5px] text-xs ${
-            monthly ? 'border-accent bg-accent text-surface' : 'border-line-strong'
-          }`}
+          className="flex size-5 items-center justify-center rounded-[5px] border-[1.5px] border-line-strong"
           aria-hidden
-        >
-          {monthly ? '✓' : ''}
+        />
+        <span className="text-[14.5px] text-muted">
+          Monthly contributions are not possible on mobile money yet
         </span>
-        <span className="text-[14.5px] text-ink">Make this a monthly contribution</span>
-      </button>
+      </div>
 
-      {/* Payments are not connected. A disabled button that says why beats a
-          button that appears to take money and cannot. */}
       <button
         type="button"
-        disabled
-        className="mt-[18px] w-full rounded-full bg-accent py-4 text-base font-bold text-[#fff6ea] opacity-50"
+        onClick={() => setGiving(chosen * 100)}
+        disabled={tooSmall}
+        className="mt-[18px] w-full rounded-full bg-accent py-4 text-base font-bold text-[#fff6ea] disabled:opacity-40"
       >
-        {monthly ? `Support ZMW ${chosen} monthly` : `Support with ZMW ${chosen}`}
+        {tooSmall ? 'Choose an amount' : `Support with ZMW ${chosen}`}
       </button>
       <p className="pt-3 text-center text-xs text-muted">
-        Airtel Money · MTN MoMo · Zamtel Kwacha · Card
-      </p>
-      <p className="pt-2 text-center text-xs text-accent-deep">
-        Mobile money is not connected yet, so this cannot take a payment.
+        Airtel Money · MTN MoMo · Zamtel Kwacha
       </p>
 
       <div className="mt-[26px] rounded-card bg-surface-warm p-[18px]">
@@ -97,6 +96,10 @@ export function SupportScreen() {
           Their support pays for the phone calls, the data, the editing, and keeps every story free.
         </p>
       </div>
+
+      {giving !== null && (
+        <SupportSheet amountMinor={giving} onClose={() => setGiving(null)} />
+      )}
     </div>
   )
 }

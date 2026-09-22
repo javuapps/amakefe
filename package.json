@@ -5,6 +5,7 @@
   "scripts": {
     "dev:reader": "pnpm --filter reader_web dev",
     "dev:author": "pnpm --filter author_web dev",
+    "dev:operator": "pnpm --filter operator_web dev",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test"

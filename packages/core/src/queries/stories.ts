@@ -22,23 +22,59 @@ export async function fetchCategories(db: Db): Promise<Category[]> {
   return data
 }
 
+export const FEED_PAGE_SIZE = 12
+
+/** A page of story cards, and whether there is another behind it. */
+export type StoryPage = { items: StoryCard[]; hasMore: boolean }
+
+/**
+ * One page of the feed, newest first, optionally narrowed to a category.
+ *
+ * The range asks for one row past the page so `hasMore` needs no count and no
+ * second round trip — an exact count would scan the whole view every time
+ * somebody scrolls.
+ */
 export async function fetchFeed(
   db: Db,
-  options: { categorySlug?: string | null; limit?: number } = {},
-): Promise<StoryCard[]> {
-  const { categorySlug = null, limit = 30 } = options
+  options: { categorySlug?: string | null; page?: number; pageSize?: number } = {},
+): Promise<StoryPage> {
+  const { categorySlug = null, page = 0, pageSize = FEED_PAGE_SIZE } = options
+  const from = page * pageSize
+
   let query = db.from('cnt_story_cards').select('*')
   if (categorySlug) query = query.eq('category_slug', categorySlug)
 
-  const { data, error } = await query.order('published_at', { ascending: false }).limit(limit)
+  const { data, error } = await query
+    .order('published_at', { ascending: false })
+    .range(from, from + pageSize)
   if (error) throw error
-  return data.map(toStoryCard)
+
+  return { items: data.slice(0, pageSize).map(toStoryCard), hasMore: data.length > pageSize }
 }
 
-export async function searchStories(db: Db, term: string): Promise<StoryCard[]> {
-  const { data, error } = await db.rpc('cnt_search_stories', { p_query: term })
+/**
+ * Search, paged the same way — but through arguments, not `.range()`.
+ *
+ * PostgREST ignores a `Range` header on a POST to a function, which is what
+ * `.range()` sets, so paging an RPC that way silently returns the first page
+ * every time. `cnt_search_stories` therefore takes its own limit and offset.
+ */
+export async function searchStories(
+  db: Db,
+  term: string,
+  options: { page?: number; pageSize?: number } = {},
+): Promise<StoryPage> {
+  const { page = 0, pageSize = FEED_PAGE_SIZE } = options
+
+  const { data, error } = await db.rpc('cnt_search_stories', {
+    p_query: term,
+    // One past the page, so `hasMore` costs no extra round trip.
+    p_limit: pageSize + 1,
+    p_offset: page * pageSize,
+  })
   if (error) throw error
-  return data.map(toStoryCard)
+
+  return { items: data.slice(0, pageSize).map(toStoryCard), hasMore: data.length > pageSize }
 }
 
 export async function fetchStory(db: Db, slug: string): Promise<Story> {

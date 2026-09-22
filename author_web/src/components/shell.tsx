@@ -17,6 +17,9 @@ const TITLES: Record<string, [string, string]> = {
   '/': ['Dashboard', 'How the community is reading'],
   '/stories': ['All stories', 'Every story and the parts inside it'],
   '/schedule': ['Schedule & publish', 'What goes out, and when'],
+  '/community/questions': ['Ask Her', 'Questions readers have sent, and your answers'],
+  '/community/polls': ['Polls', 'What the community is being asked'],
+  '/community/notices': ['Notices', 'Short posts to the community'],
   '/moderation': ['Moderation', 'Comments and reports waiting for you'],
   '/settings': ['Settings', 'Where the studio publishes to'],
   '/supporters': ['Supporters & revenue', 'Contributions to the community'],
@@ -105,6 +108,7 @@ function Nav() {
   const inStories = STORY_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   )
+  const inCommunity = pathname.startsWith('/community')
 
   return (
     <nav className="flex flex-col gap-[2px] px-3">
@@ -131,6 +135,22 @@ function Nav() {
           New story
         </button>
         <Item to="/schedule" label="Schedule" />
+      </div>
+
+      {/* Same shape as Stories above: a landmark with its destinations under
+          it, because the three are one job seen three ways. */}
+      <div
+        className={`mt-1 flex items-center gap-[11px] px-3 py-[11px] text-[15px] ${
+          inCommunity ? 'text-surface-warm' : 'text-[#b5a294]'
+        }`}
+      >
+        <span className="w-[22px] text-center text-[19px] leading-none opacity-90">☷</span>
+        Community
+      </div>
+      <div className="flex flex-col gap-[2px] pl-[22px]">
+        <Item to="/community/questions" label="Ask Her" />
+        <Item to="/community/polls" label="Polls" />
+        <Item to="/community/notices" label="Notices" />
       </div>
 
       <Item to="/moderation" glyph="⚑" label="Moderation" className="mt-1" />

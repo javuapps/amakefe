@@ -48,6 +48,29 @@ const router = createBrowserRouter([
         path: '/settings',
         lazy: async () => ({ Component: (await import('./screens/SettingsScreen')).SettingsScreen }),
       },
+      // One screen, three kinds — the frame is identical and only the middle
+      // differs, so the kind is a prop rather than three near-copies.
+      {
+        path: '/community/questions',
+        lazy: async () => {
+          const { CommunityScreen } = await import('./screens/CommunityScreen')
+          return { Component: () => <CommunityScreen kind="question" /> }
+        },
+      },
+      {
+        path: '/community/polls',
+        lazy: async () => {
+          const { CommunityScreen } = await import('./screens/CommunityScreen')
+          return { Component: () => <CommunityScreen kind="poll" /> }
+        },
+      },
+      {
+        path: '/community/notices',
+        lazy: async () => {
+          const { CommunityScreen } = await import('./screens/CommunityScreen')
+          return { Component: () => <CommunityScreen kind="notice" /> }
+        },
+      },
       {
         path: '/moderation',
         lazy: async () => ({

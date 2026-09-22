@@ -3,6 +3,7 @@ import type { Enums, Json, Tables } from '../database.types'
 import { emptyDoc, type ProseDoc } from '../models/prose'
 import { normaliseDocPaths } from './storage'
 import type { StoryType } from '../models/story'
+import { escapeLike } from './search'
 
 /**
  * Everything the creator studio reads and writes.
@@ -239,10 +240,6 @@ export type StoryFilters = {
   page?: number
   pageSize?: number
 }
-
-/** PostgREST `ilike` treats %, _ and backslash as syntax; an editor typing them means them. */
-const escapeLike = (value: string): string =>
-  value.replace(/[%_\\]/g, (char) => '\\' + char)
 
 export const STORIES_PER_PAGE = 10
 
@@ -486,8 +483,10 @@ export async function createStory(db: Db, input: NewStory): Promise<string> {
     p_title: input.title,
     p_summary: input.summary ?? '',
     p_story_type: input.storyType ?? 'single',
-    p_planned_part_count: input.plannedPartCount ?? null,
-    p_category_slug: input.categorySlug ?? null,
+    // Omitted rather than passed as null: both arguments have SQL defaults, and
+    // the generated Args type takes them as optional.
+    p_planned_part_count: input.plannedPartCount ?? undefined,
+    p_category_slug: input.categorySlug ?? undefined,
   })
   if (error) throw error
   return data
@@ -800,32 +799,4 @@ export async function keepComment(db: Db, commentId: string): Promise<void> {
     .eq('target_kind', 'comment')
     .eq('target_id', commentId)
   if (error) throw error
-}
-
-export type SupportTransaction = {
-  id: string
-  amountMinor: number
-  currency: string
-  isMonthly: boolean
-  provider: string
-  status: Enums<'sup_status'>
-  createdAt: Date
-}
-
-export async function fetchSupportTransactions(db: Db): Promise<SupportTransaction[]> {
-  const { data, error } = await db
-    .from('sup_transactions')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(50)
-  if (error) throw error
-  return data.map((row) => ({
-    id: row.id,
-    amountMinor: row.amount_minor,
-    currency: row.currency,
-    isMonthly: row.is_monthly,
-    provider: row.provider,
-    status: row.status,
-    createdAt: new Date(row.created_at),
-  }))
 }

@@ -6,7 +6,14 @@ import {
   deletePart,
   fetchCategories,
   fetchDashboardStats,
+  answerQuestion,
+  createNotice,
+  createPoll,
+  deletePost,
+  fetchAskerNames,
   fetchModerationQueue,
+  fetchPostsByKind,
+  setPostPublished,
   fetchFacebookPostStats,
   fetchPublications,
   fetchSeriesRetention,
@@ -21,6 +28,9 @@ import {
   fetchStudioStories,
   fetchStudioTotals,
   fetchStudioStory,
+  fetchSettlementAccount,
+  fetchSettlements,
+  fetchSupportTotals,
   fetchSupportTransactions,
   hideComment,
   keepComment,
@@ -38,6 +48,7 @@ import {
   type StoryFilters,
   type StoryMetadataPatch,
   type StudioStory,
+  type PostKind,
 } from '@amakefe/core'
 import { db } from '../db'
 
@@ -56,7 +67,13 @@ export const keys = {
   comments: (storyId: string) => ['comments', storyId] as const,
   categories: ['categories'] as const,
   moderation: ['moderation'] as const,
+  community: ['community'] as const,
+  posts: (kind: string) => ['community', kind] as const,
+  askers: ['community', 'askers'] as const,
   support: ['support'] as const,
+  supportTotals: ['supportTotals'] as const,
+  settlements: ['settlements'] as const,
+  settlementAccount: ['settlementAccount'] as const,
 }
 
 export const useDashboardStats = () =>
@@ -198,6 +215,15 @@ export const useModerationQueue = () =>
 export const useSupportTransactions = () =>
   useQuery({ queryKey: keys.support, queryFn: () => fetchSupportTransactions(db) })
 
+export const useSupportTotals = () =>
+  useQuery({ queryKey: keys.supportTotals, queryFn: () => fetchSupportTotals(db) })
+
+export const useSettlements = () =>
+  useQuery({ queryKey: keys.settlements, queryFn: () => fetchSettlements(db) })
+
+export const useSettlementAccount = () =>
+  useQuery({ queryKey: keys.settlementAccount, queryFn: () => fetchSettlementAccount(db) })
+
 // ---------------------------------------------------------------------------
 // Mutations
 // ---------------------------------------------------------------------------
@@ -326,3 +352,47 @@ export function useModerate() {
     onSuccess: () => client.invalidateQueries({ queryKey: keys.moderation }),
   })
 }
+
+// ---------------------------------------------------------------------------
+// Community
+// ---------------------------------------------------------------------------
+
+export const usePosts = (kind: PostKind) =>
+  useQuery({ queryKey: keys.posts(kind), queryFn: () => fetchPostsByKind(db, kind) })
+
+/** Who asked, for the questions on screen. Staff only; never shown to readers. */
+export const useAskerNames = (postIds: string[]) =>
+  useQuery({
+    queryKey: [...keys.askers, postIds.join(',')],
+    queryFn: () => fetchAskerNames(db, postIds),
+    enabled: postIds.length > 0,
+  })
+
+function useCommunityMutation<T>(fn: (input: T) => Promise<unknown>) {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: fn,
+    // Every one of these can move a post between the three lists, so all of
+    // them are refreshed rather than guessing which.
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.community }),
+  })
+}
+
+export const useAnswerQuestion = () =>
+  useCommunityMutation(({ postId, answer }: { postId: string; answer: string }) =>
+    answerQuestion(db, postId, answer),
+  )
+
+export const useSetPostPublished = () =>
+  useCommunityMutation(({ postId, publish }: { postId: string; publish: boolean }) =>
+    setPostPublished(db, postId, publish),
+  )
+
+export const useCreateNotice = () => useCommunityMutation((body: string) => createNotice(db, body))
+
+export const useCreatePoll = () =>
+  useCommunityMutation(({ question, labels }: { question: string; labels: string[] }) =>
+    createPoll(db, question, labels),
+  )
+
+export const useDeletePost = () => useCommunityMutation((postId: string) => deletePost(db, postId))
